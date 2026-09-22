@@ -146,6 +146,16 @@ export const AdminControlCenter: React.FC = () => {
     depEdVision: schoolProfile?.depEdVision || schoolProfile?.vision || 'We dream of Filipinos who passionately love their country...',
     depEdMission: schoolProfile?.depEdMission || schoolProfile?.mission || 'To protect and promote the right of every Filipino...',
     depEdMandate: schoolProfile?.depEdMandate || schoolProfile?.mandate || 'The Department of Education was established under Executive Order No. 94...',
+    dashboardBannerBadge: schoolProfile?.dashboardBanner?.badgeText ?? 'Official Policy DepEd Order No. 007, s. 2024',
+    dashboardBannerTitle: schoolProfile?.dashboardBanner?.title ?? 'SBM Performance & Evidence Tracking — {SY}',
+    dashboardBannerDescription: schoolProfile?.dashboardBanner?.description ?? 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation under DepEd Order No. 007, s. 2024.',
+    dashboardBannerShowAnnouncement: schoolProfile?.dashboardBanner?.showAnnouncement ?? false,
+    dashboardBannerAnnouncementText: schoolProfile?.dashboardBanner?.announcementText ?? 'Reminder: Please ensure all SBM MOV files and documentary artifacts are submitted on time.',
+    dashboardBannerAnnouncementType: (schoolProfile?.dashboardBanner?.announcementType || 'gold') as 'gold' | 'emerald' | 'blue' | 'amber',
+    dashboardBannerTheme: (schoolProfile?.dashboardBanner?.theme || 'emerald_gold') as 'emerald_gold' | 'forest_classic' | 'midnight_jade' | 'royal_pine',
+    dashboardBannerQuickUpload: schoolProfile?.dashboardBanner?.quickUploadVisible ?? true,
+    dashboardBannerQuickAssess: schoolProfile?.dashboardBanner?.quickAssessVisible ?? true,
+    dashboardBannerQuickReports: schoolProfile?.dashboardBanner?.quickReportsVisible ?? true,
   });
 
   const [savingSettings, setSavingSettings] = useState(false);
@@ -352,7 +362,19 @@ export const AdminControlCenter: React.FC = () => {
         computerLaboratories: Number(schoolSettingsForm.computerLaboratories),
         depEdVision: schoolSettingsForm.depEdVision,
         depEdMission: schoolSettingsForm.depEdMission,
-        depEdMandate: schoolSettingsForm.depEdMandate
+        depEdMandate: schoolSettingsForm.depEdMandate,
+        dashboardBanner: {
+          badgeText: schoolSettingsForm.dashboardBannerBadge,
+          title: schoolSettingsForm.dashboardBannerTitle,
+          description: schoolSettingsForm.dashboardBannerDescription,
+          showAnnouncement: schoolSettingsForm.dashboardBannerShowAnnouncement,
+          announcementText: schoolSettingsForm.dashboardBannerAnnouncementText,
+          announcementType: schoolSettingsForm.dashboardBannerAnnouncementType,
+          theme: schoolSettingsForm.dashboardBannerTheme,
+          quickUploadVisible: schoolSettingsForm.dashboardBannerQuickUpload,
+          quickAssessVisible: schoolSettingsForm.dashboardBannerQuickAssess,
+          quickReportsVisible: schoolSettingsForm.dashboardBannerQuickReports,
+        }
       });
       showNotification('School Profile & Contact Settings updated successfully!');
     } catch (err: any) {
@@ -897,7 +919,7 @@ export const AdminControlCenter: React.FC = () => {
                   2. Principal & Official Signatories / Leadership
                 </span>
                 <span className="text-[11px] text-[#A7D7C1]">
-                  Maaaring magbawas o mag-delete ng signatories kung marami
+                  Manage, add, or remove signatories as needed
                 </span>
               </div>
 
@@ -947,7 +969,7 @@ export const AdminControlCenter: React.FC = () => {
                 {/* Assistant Principal with Delete Option */}
                 <div className="sm:col-span-2 p-3.5 bg-[#040D08] border border-[#D4AF37]/20 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#E2F0EA]">Assistant Principal (Opsyonal)</span>
+                    <span className="text-xs font-semibold text-[#E2F0EA]">Assistant Principal (Optional)</span>
                     {schoolSettingsForm.assistantPrincipal ? (
                       <button
                         type="button"
@@ -955,7 +977,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-rose-400 hover:text-rose-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-rose-950/40 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>Alisin / I-delete Signatory</span>
+                        <span>Remove Signatory</span>
                       </button>
                     ) : (
                       <button
@@ -964,7 +986,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-emerald-950/40 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Idagdag / I-restore</span>
+                        <span>Add / Restore Signatory</span>
                       </button>
                     )}
                   </div>
@@ -990,7 +1012,7 @@ export const AdminControlCenter: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-[#8FBCA7] italic">Naka-delete ang Assistant Principal mula sa mga signatories.</p>
+                    <p className="text-xs text-[#8FBCA7] italic">Assistant Principal is excluded from official signatories.</p>
                   )}
                 </div>
 
@@ -1005,7 +1027,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-rose-400 hover:text-rose-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-rose-950/40 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>Alisin / I-delete Signatory</span>
+                        <span>Remove Signatory</span>
                       </button>
                     ) : (
                       <button
@@ -1014,7 +1036,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-emerald-950/40 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Idagdag / I-restore</span>
+                        <span>Add / Restore Signatory</span>
                       </button>
                     )}
                   </div>
@@ -1040,7 +1062,7 @@ export const AdminControlCenter: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-[#8FBCA7] italic">Naka-delete ang Division SBM Validator mula sa mga signatories.</p>
+                    <p className="text-xs text-[#8FBCA7] italic">Division SBM Validator is excluded from official signatories.</p>
                   )}
                 </div>
 
@@ -1055,7 +1077,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-rose-400 hover:text-rose-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-rose-950/40 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>Alisin / I-delete Signatory</span>
+                        <span>Remove Signatory</span>
                       </button>
                     ) : (
                       <button
@@ -1064,7 +1086,7 @@ export const AdminControlCenter: React.FC = () => {
                         className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 px-2 py-0.5 rounded hover:bg-emerald-950/40 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Idagdag / I-restore</span>
+                        <span>Add / Restore Signatory</span>
                       </button>
                     )}
                   </div>
@@ -1090,7 +1112,7 @@ export const AdminControlCenter: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-[#8FBCA7] italic">Naka-delete ang Schools Division Superintendent mula sa mga signatories.</p>
+                    <p className="text-xs text-[#8FBCA7] italic">Schools Division Superintendent is excluded from official signatories.</p>
                   )}
                 </div>
               </div>
@@ -1101,7 +1123,7 @@ export const AdminControlCenter: React.FC = () => {
                   <span className="text-xs font-semibold text-[#D4AF37] block">
                     SBM Dimension Coordinators (6 Dimensions)
                   </span>
-                  <span className="text-[11px] text-[#8FBCA7]">Maaaring alisin o i-clear ang coordinator</span>
+                  <span className="text-[11px] text-[#8FBCA7]">Clear or reassign coordinator fields as needed</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {schoolSettingsForm.dimensionCoordinators?.map((coord, idx) => {
@@ -1128,7 +1150,7 @@ export const AdminControlCenter: React.FC = () => {
                                 updated[idx] = { ...updated[idx], name: '', leadName: '', title: '', designation: '' };
                                 setSchoolSettingsForm({ ...schoolSettingsForm, dimensionCoordinators: updated });
                               }}
-                              title="Alisin / I-clear ang Coordinator"
+                              title="Clear Coordinator"
                               className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-950/40 transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1293,6 +1315,181 @@ export const AdminControlCenter: React.FC = () => {
                     onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, computerLaboratories: Number(e.target.value) })}
                     className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 5: Dashboard Top Banner Customization */}
+            <div className="p-5 bg-[#092217]/90 rounded-2xl border border-[#D4AF37]/20 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-[#F0D283] block uppercase tracking-wider text-[11px]">
+                    5. Dashboard Top Banner Customization
+                  </span>
+                  <p className="text-[11px] text-[#8FBCA7] mt-0.5">
+                    Customize the welcome headline, policy badge, narrative description, broadcast memo, and theme on the SBM Dashboard.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {/* Badge Text */}
+                <div>
+                  <label className="block text-[#E2F0EA] mb-1 font-semibold">
+                    Banner Policy Badge Text
+                  </label>
+                  <input
+                    type="text"
+                    value={schoolSettingsForm.dashboardBannerBadge}
+                    onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerBadge: e.target.value })}
+                    placeholder="e.g. Official Policy DepEd Order No. 007, s. 2024"
+                    className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <span className="text-[10px] text-[#8FBCA7] mt-1 block">
+                    Small rounded pill badge shown above the main dashboard headline.
+                  </span>
+                </div>
+
+                {/* Headline / Title */}
+                <div>
+                  <label className="block text-[#E2F0EA] mb-1 font-semibold">
+                    Banner Main Headline / Title
+                  </label>
+                  <input
+                    type="text"
+                    value={schoolSettingsForm.dashboardBannerTitle}
+                    onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerTitle: e.target.value })}
+                    placeholder="e.g. SBM Performance & Evidence Tracking — {SY}"
+                    className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <span className="text-[10px] text-[#8FBCA7] mt-1 block">
+                    Use <code className="text-[#F0D283] font-mono">{'{SY}'}</code> to automatically insert the current school year label (e.g. S.Y. 2024-2025).
+                  </span>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-[#E2F0EA] mb-1 font-semibold">
+                    Banner Subtitle & Welcome Narrative
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={schoolSettingsForm.dashboardBannerDescription}
+                    onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerDescription: e.target.value })}
+                    placeholder="e.g. Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation under DepEd Order No. 007, s. 2024."
+                    className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                {/* Color Theme Selection */}
+                <div>
+                  <label className="block text-[#E2F0EA] mb-1.5 font-semibold">
+                    Banner Visual Theme
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {[
+                      { id: 'emerald_gold', name: 'Emerald & Gold', desc: 'DepEd Official Classic', preview: 'from-[#0C301F] to-[#072015] border-[#D4AF37]/40' },
+                      { id: 'forest_classic', name: 'Forest Green', desc: 'Deep Evergreen', preview: 'from-[#072316] to-[#05180F] border-emerald-500/40' },
+                      { id: 'midnight_jade', name: 'Midnight Jade', desc: 'Modern Teal Accent', preview: 'from-[#041B1B] to-[#031313] border-teal-500/40' },
+                      { id: 'royal_pine', name: 'Royal Pine', desc: 'Warm Amber Trim', preview: 'from-[#092217] to-[#061910] border-amber-500/40' },
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerTheme: t.id as any })}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          schoolSettingsForm.dashboardBannerTheme === t.id
+                            ? 'bg-[#0E3824] border-[#D4AF37] ring-1 ring-[#D4AF37]'
+                            : 'bg-[#061810] border-[#D4AF37]/20 hover:border-[#D4AF37]/40'
+                        }`}
+                      >
+                        <div className={`h-6 rounded-lg bg-gradient-to-r ${t.preview} mb-2 border`} />
+                        <span className="font-bold text-[#FFFDF9] block text-xs">{t.name}</span>
+                        <span className="text-[10px] text-[#8FBCA7] block">{t.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Announcement Notice in Banner */}
+                <div className="pt-3 border-t border-[#D4AF37]/15 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-[#E2F0EA]">Broadcast Announcement Strip</span>
+                      <p className="text-[10px] text-[#8FBCA7]">Display a high-priority memo bar inside the dashboard banner.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={schoolSettingsForm.dashboardBannerShowAnnouncement}
+                        onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerShowAnnouncement: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+                    </label>
+                  </div>
+
+                  {schoolSettingsForm.dashboardBannerShowAnnouncement && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div className="sm:col-span-2">
+                        <label className="block text-[#E2F0EA] mb-1 font-semibold">Announcement Text</label>
+                        <input
+                          type="text"
+                          value={schoolSettingsForm.dashboardBannerAnnouncementText}
+                          onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerAnnouncementText: e.target.value })}
+                          placeholder="e.g. SBM Validation scheduled on Friday. Please review all Dimension indicators."
+                          className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[#E2F0EA] mb-1 font-semibold">Notice Color Accent</label>
+                        <select
+                          value={schoolSettingsForm.dashboardBannerAnnouncementType}
+                          onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerAnnouncementType: e.target.value as any })}
+                          className="w-full p-2.5 bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+                        >
+                          <option value="gold">Gold (Highlight)</option>
+                          <option value="emerald">Emerald (Success / Normal)</option>
+                          <option value="blue">Blue (Informational)</option>
+                          <option value="amber">Amber (Urgent Reminder)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Action Button Toggles */}
+                <div className="pt-3 border-t border-[#D4AF37]/15">
+                  <span className="font-semibold text-[#E2F0EA] block mb-2">Visible Banner Action Buttons</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <label className="flex items-center space-x-2 p-2.5 rounded-xl bg-[#061810] border border-[#D4AF37]/20 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={schoolSettingsForm.dashboardBannerQuickUpload}
+                        onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerQuickUpload: e.target.checked })}
+                        className="rounded accent-[#D4AF37]"
+                      />
+                      <span className="text-[#FFFDF9] font-medium">Upload MOV Button</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-2.5 rounded-xl bg-[#061810] border border-[#D4AF37]/20 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={schoolSettingsForm.dashboardBannerQuickAssess}
+                        onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerQuickAssess: e.target.checked })}
+                        className="rounded accent-[#D4AF37]"
+                      />
+                      <span className="text-[#FFFDF9] font-medium">Assessment Matrix Button</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-2.5 rounded-xl bg-[#061810] border border-[#D4AF37]/20 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={schoolSettingsForm.dashboardBannerQuickReports}
+                        onChange={(e) => setSchoolSettingsForm({ ...schoolSettingsForm, dashboardBannerQuickReports: e.target.checked })}
+                        className="rounded accent-[#D4AF37]"
+                      />
+                      <span className="text-[#FFFDF9] font-medium">Generate Reports Button</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>

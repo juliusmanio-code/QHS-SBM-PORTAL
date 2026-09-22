@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FileCheck,
   AlertTriangle,
@@ -13,14 +13,17 @@ import {
   Users,
   Award,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Edit3,
+  Megaphone
 } from 'lucide-react';
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DegreeBadge } from '../common/DegreeBadge';
 import { StatusBadge } from '../common/StatusBadge';
 import { ConfidentialityBadge } from '../common/ConfidentialityBadge';
-import { DegreeOfManifestation } from '../../types';
+import { DegreeOfManifestation, DashboardBannerConfig } from '../../types';
+import { BannerEditorModal } from './BannerEditorModal';
 
 interface SbmDashboardViewProps {
   onNavigateToDimension: (dimensionId: number) => void;
@@ -41,8 +44,49 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
   onNavigateToReports,
   onOpenUpload
 }) => {
-  const { currentSchoolYear, progressStats, movRecords, reviews, requiredMovItems } = useSbmData();
+  const { currentSchoolYear, progressStats, movRecords, reviews, requiredMovItems, schoolProfile, updateSchoolProfile } = useSbmData();
   const { userProfile, role } = useAuth();
+  const [isEditingBanner, setIsEditingBanner] = useState(false);
+
+  // Check if role is authorized to edit dashboard banner
+  const canEditBanner = role === 'super_admin' || role === 'school_head' || role === 'sbm_coordinator';
+
+  // Resolved banner config with sensible fallbacks
+  const bannerConfig: DashboardBannerConfig = schoolProfile?.dashboardBanner || {
+    badgeText: 'Official Policy DepEd Order No. 007, s. 2024',
+    title: 'SBM Performance & Evidence Tracking — {SY}',
+    description: 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.',
+    showAnnouncement: false,
+    theme: 'emerald_gold',
+    quickUploadVisible: true,
+    quickAssessVisible: true,
+    quickReportsVisible: true
+  };
+
+  const bannerTitle = (bannerConfig.title || 'SBM Performance & Evidence Tracking — {SY}').replace(
+    '{SY}',
+    currentSchoolYear.label
+  );
+
+  const getThemeClasses = (theme?: string) => {
+    switch (theme) {
+      case 'forest_classic':
+        return 'bg-gradient-to-r from-[#072316] via-[#0D3823] to-[#05180F] border-emerald-500/40';
+      case 'midnight_jade':
+        return 'bg-gradient-to-r from-[#041B1B] via-[#0A2E2C] to-[#031313] border-teal-500/40';
+      case 'royal_pine':
+        return 'bg-gradient-to-r from-[#092217] via-[#133F2C] to-[#061910] border-amber-500/45';
+      case 'emerald_gold':
+      default:
+        return 'bg-gradient-to-r from-[#0C301F] via-[#103D28] to-[#072015] border-[#D4AF37]/35';
+    }
+  };
+
+  const handleSaveBanner = async (newConfig: DashboardBannerConfig) => {
+    await updateSchoolProfile({
+      dashboardBanner: newConfig
+    });
+  };
 
   const recentMovs = movRecords
     .filter((m) => m.schoolYearId === currentSchoolYear.id)
@@ -66,46 +110,98 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
   return (
     <div id="sbm-dashboard-view" className="space-y-6">
       {/* Top Banner / Welcome Action */}
-      <div className="bg-gradient-to-r from-[#0C301F] via-[#103D28] to-[#072015] rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border border-[#D4AF37]/35 relative overflow-hidden">
+      <div className={`rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border relative overflow-hidden transition-all ${getThemeClasses(bannerConfig.theme)}`}>
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#D4AF37]/5 transform skew-x-12 pointer-events-none" />
+        
+        {/* Edit Banner Button (for Super Admin, School Head, SBM Coordinator) */}
+        {canEditBanner && (
+          <button
+            id="edit-dashboard-banner-btn"
+            type="button"
+            onClick={() => setIsEditingBanner(true)}
+            className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-xl bg-[#061810]/80 hover:bg-[#0E3322] border border-[#D4AF37]/40 text-[#F0D283] hover:text-[#FFFDF9] text-xs font-semibold flex items-center space-x-1.5 backdrop-blur-xs transition-all shadow-md hover:scale-105"
+            title="Customize Dashboard Banner"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Edit Banner</span>
+          </button>
+        )}
+
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold">
-            <span>Official Policy DepEd Order No. 007, s. 2024</span>
-          </div>
+          {bannerConfig.badgeText && (
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold">
+              <span>{bannerConfig.badgeText}</span>
+            </div>
+          )}
+
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFFDF9]">
-            SBM Performance & Evidence Tracking — {currentSchoolYear.label}
+            {bannerTitle}
           </h2>
+
           <p className="text-sm text-[#D1E7DD] leading-relaxed">
-            Welcome, <strong className="text-[#FFFDF9]">{userProfile?.displayName}</strong> ({role === 'super_admin' ? 'System Administrator' : role.replace('_', ' ')}). Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.
+            Welcome, <strong className="text-[#FFFDF9]">{userProfile?.displayName}</strong> ({role === 'super_admin' ? 'System Administrator' : role.replace('_', ' ')}). {bannerConfig.description || 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.'}
           </p>
 
+          {/* Optional Broadcast Announcement */}
+          {bannerConfig.showAnnouncement && bannerConfig.announcementText && (
+            <div className={`p-2.5 rounded-xl border flex items-center space-x-2.5 text-xs shadow-sm ${
+              bannerConfig.announcementType === 'amber'
+                ? 'bg-amber-950/70 border-amber-500/50 text-amber-200'
+                : bannerConfig.announcementType === 'emerald'
+                ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-200'
+                : bannerConfig.announcementType === 'blue'
+                ? 'bg-sky-950/70 border-sky-500/50 text-sky-200'
+                : 'bg-[#0E3824]/90 border-[#D4AF37]/50 text-[#F0D283]'
+            }`}>
+              <Megaphone className="w-4 h-4 flex-shrink-0 text-current animate-pulse" />
+              <span className="font-medium leading-tight">{bannerConfig.announcementText}</span>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2.5 pt-2">
-            <button
-              id="dashboard-quick-upload-btn"
-              onClick={onOpenUpload}
-              className="gold-btn px-4 py-2 text-xs rounded-xl shadow-md flex items-center space-x-1.5"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Upload MOV Evidence</span>
-            </button>
-            <button
-              id="dashboard-quick-assess-btn"
-              onClick={onNavigateToAssessment}
-              className="px-4 py-2 bg-[#061B12]/80 hover:bg-[#0E3322] text-[#F0D283] font-semibold text-xs rounded-xl border border-[#D4AF37]/40 transition-colors flex items-center space-x-1.5"
-            >
-              <span>Assessment Matrix</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              id="dashboard-quick-reports-btn"
-              onClick={onNavigateToReports}
-              className="px-4 py-2 bg-[#061B12]/80 hover:bg-[#0E3322] text-[#FFFDF9] font-semibold text-xs rounded-xl border border-[#D4AF37]/30 transition-colors flex items-center space-x-1.5"
-            >
-              <span>Generate SBM Reports</span>
-            </button>
+            {(bannerConfig.quickUploadVisible ?? true) && (
+              <button
+                id="dashboard-quick-upload-btn"
+                onClick={onOpenUpload}
+                className="gold-btn px-4 py-2 text-xs rounded-xl shadow-md flex items-center space-x-1.5"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload MOV Evidence</span>
+              </button>
+            )}
+            {(bannerConfig.quickAssessVisible ?? true) && (
+              <button
+                id="dashboard-quick-assess-btn"
+                onClick={onNavigateToAssessment}
+                className="px-4 py-2 bg-[#061B12]/80 hover:bg-[#0E3322] text-[#F0D283] font-semibold text-xs rounded-xl border border-[#D4AF37]/40 transition-colors flex items-center space-x-1.5"
+              >
+                <span>Assessment Matrix</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {(bannerConfig.quickReportsVisible ?? true) && (
+              <button
+                id="dashboard-quick-reports-btn"
+                onClick={onNavigateToReports}
+                className="px-4 py-2 bg-[#061B12]/80 hover:bg-[#0E3322] text-[#FFFDF9] font-semibold text-xs rounded-xl border border-[#D4AF37]/30 transition-colors flex items-center space-x-1.5"
+              >
+                <span>Generate SBM Reports</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Banner Editor Modal */}
+      <BannerEditorModal
+        isOpen={isEditingBanner}
+        onClose={() => setIsEditingBanner(false)}
+        initialConfig={bannerConfig}
+        currentSchoolYearLabel={currentSchoolYear.label}
+        userDisplayName={userProfile?.displayName}
+        userRole={role === 'super_admin' ? 'System Administrator' : role.replace('_', ' ')}
+        onSave={handleSaveBanner}
+      />
 
       {/* Real-time KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

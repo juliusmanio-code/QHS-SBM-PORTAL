@@ -272,6 +272,7 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
             ? parsed.dimensionCoordinators
             : INITIAL_SCHOOL_PROFILE.dimensionCoordinators,
           customSignatories: parsed.customSignatories !== undefined ? parsed.customSignatories : (INITIAL_SCHOOL_PROFILE.customSignatories || []),
+          dashboardBanner: parsed.dashboardBanner !== undefined ? parsed.dashboardBanner : INITIAL_SCHOOL_PROFILE.dashboardBanner,
           enrollmentSummary: {
             ...INITIAL_SCHOOL_PROFILE.enrollmentSummary,
             ...(parsed.enrollmentSummary || {})

@@ -262,7 +262,7 @@ export const SchoolProfileView: React.FC = () => {
       divisionValidator: 'Division SBM Validator',
       divisionSuperintendent: 'Schools Division Superintendent'
     };
-    if (window.confirm(`Alisin / i-delete si ${roleLabels[roleKey]} bilang opisyal na signatory?`)) {
+    if (window.confirm(`Remove ${roleLabels[roleKey]} from the official signatories list?`)) {
       setProfileForm((prev) => ({
         ...prev,
         [roleKey]: '',
@@ -292,7 +292,7 @@ export const SchoolProfileView: React.FC = () => {
       divisionValidator: 'Division SBM Validator',
       divisionSuperintendent: 'Schools Division Superintendent'
     };
-    if (window.confirm(`Alisin / i-delete si ${roleLabels[roleKey]} bilang signatory mula sa opisyal na roster at mga reports?`)) {
+    if (window.confirm(`Remove ${roleLabels[roleKey]} from official signatories and reporting documents?`)) {
       await updateSchoolProfile({
         [roleKey]: '',
         [`${roleKey}Title`]: ''
@@ -304,7 +304,7 @@ export const SchoolProfileView: React.FC = () => {
   const handleDeleteCoordinator = (index: number) => {
     const coord = profileForm.dimensionCoordinators[index];
     const name = coord?.leadName || `Dimension ${coord?.dimensionId} Coordinator`;
-    if (window.confirm(`Alisin si ${name} mula sa talaan ng Dimension Coordinators?`)) {
+    if (window.confirm(`Remove ${name} from Dimension Coordinators?`)) {
       const updated = profileForm.dimensionCoordinators.filter((_, i) => i !== index);
       setProfileForm((prev) => ({
         ...prev,
@@ -315,7 +315,7 @@ export const SchoolProfileView: React.FC = () => {
 
   // Direct delete a dimension coordinator from the main page roster card
   const handleDirectDeleteCoordinator = async (dimensionId: number, name: string) => {
-    if (window.confirm(`Alisin si ${name} bilang coordinator ng Dimension ${dimensionId}?`)) {
+    if (window.confirm(`Remove ${name} as coordinator for Dimension ${dimensionId}?`)) {
       const updated = (schoolProfile?.dimensionCoordinators || defaultDimensionCoordinators).filter(
         (c) => c.dimensionId !== dimensionId
       );
@@ -371,7 +371,7 @@ export const SchoolProfileView: React.FC = () => {
   };
 
   const handleDirectDeleteCustomSignatory = async (id: string, name: string) => {
-    if (window.confirm(`Alisin ang signatory na "${name || 'ito'}" mula sa opisyal na listahan?`)) {
+    if (window.confirm(`Remove signatory "${name || 'entry'}" from official signatories list?`)) {
       const updated = (schoolProfile?.customSignatories || []).filter((s) => s.id !== id);
       await updateSchoolProfile({
         customSignatories: updated
@@ -745,7 +745,7 @@ export const SchoolProfileView: React.FC = () => {
                   divisionValidator,
                   divisionSuperintendent,
                   ...(customSignatories || []).map((s) => s.name)
-                ].filter((n) => n && n.trim() !== '').length} Aktibong Signatories
+                ].filter((n) => n && n.trim() !== '').length} Active Signatories
               </span>
             </h4>
             {canEdit && (
@@ -754,7 +754,7 @@ export const SchoolProfileView: React.FC = () => {
                 onClick={() => handleOpenEditProfile('signatories')}
                 className="text-[11px] text-[#F0D283] hover:text-[#FFFDF9] underline flex items-center space-x-1"
               >
-                <span>Pamahalaan / Magbawas ng Signatories</span>
+                <span>Manage Signatories</span>
               </button>
             )}
           </div>
@@ -791,7 +791,7 @@ export const SchoolProfileView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDirectDeleteSignatory('assistantPrincipal')}
-                    title="Alisin / I-delete si Assistant Principal mula sa mga signatories"
+                    title="Remove Assistant Principal from signatories"
                     className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -815,7 +815,7 @@ export const SchoolProfileView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDirectDeleteSignatory('divisionValidator')}
-                    title="Alisin / I-delete si Division Validator mula sa mga signatories"
+                    title="Remove Division Validator from signatories"
                     className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -839,7 +839,7 @@ export const SchoolProfileView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDirectDeleteSignatory('divisionSuperintendent')}
-                    title="Alisin / I-delete si Superintendent mula sa mga signatories"
+                    title="Remove Superintendent from signatories"
                     className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -863,7 +863,7 @@ export const SchoolProfileView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDirectDeleteCustomSignatory(sig.id, sig.name)}
-                    title={`Alisin si ${sig.name || 'Signatory'}`}
+                    title={`Remove ${sig.name || 'Signatory'}`}
                     className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -872,7 +872,7 @@ export const SchoolProfileView: React.FC = () => {
                 <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block pr-6">
                   {sig.roleLabel || 'Additional Signatory'}
                 </span>
-                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{sig.name || '(Walang Pangalan)'}</p>
+                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{sig.name || '(No Name Provided)'}</p>
                 <p className="text-[11px] text-[#A7D7C1] font-medium">{sig.title || sig.office || '-'}</p>
                 <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-[#061810] text-[#D1E7DD] border border-[#D4AF37]/20">
                   Custom
@@ -888,8 +888,8 @@ export const SchoolProfileView: React.FC = () => {
                 className="p-4 rounded-xl border border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#0E3322]/40 text-[#A7D7C1] hover:text-[#FFFDF9] flex flex-col items-center justify-center text-center space-y-1.5 transition-colors min-h-[105px]"
               >
                 <Plus className="w-5 h-5 text-[#F0D283]" />
-                <span className="text-xs font-semibold text-[#F0D283]">Magdagdag / I-restore</span>
-                <span className="text-[10px] text-[#8FBCA7]">Maaaring mag-delete o magdagdag</span>
+                <span className="text-xs font-semibold text-[#F0D283]">Add / Restore Signatories</span>
+                <span className="text-[10px] text-[#8FBCA7]">Add, edit, or remove signatories</span>
               </button>
             )}
           </div>
@@ -911,7 +911,7 @@ export const SchoolProfileView: React.FC = () => {
                 onClick={() => handleOpenEditProfile('coordinators')}
                 className="text-[11px] text-[#F0D283] hover:text-[#FFFDF9] underline flex items-center space-x-1"
               >
-                <span>Pamahalaan / I-edit ang Leads</span>
+                <span>Manage Dimension Leads</span>
               </button>
             )}
           </div>
@@ -930,7 +930,7 @@ export const SchoolProfileView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleDirectDeleteCoordinator(coord.dimensionId, coord.leadName)}
-                      title={`Alisin si ${coord.leadName} bilang coordinator`}
+                      title={`Remove ${coord.leadName} as coordinator`}
                       className="p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -941,7 +941,7 @@ export const SchoolProfileView: React.FC = () => {
                   <h5 className="font-bold text-[#FFFDF9] text-xs leading-snug line-clamp-1" title={coord.dimensionName}>
                     {coord.dimensionName}
                   </h5>
-                  <p className="text-sm font-black text-[#F0D283] mt-1">{coord.leadName || '(Walang Naka-assign)'}</p>
+                  <p className="text-sm font-black text-[#F0D283] mt-1">{coord.leadName || '(Unassigned)'}</p>
                   <p className="text-[11px] text-[#A7D7C1]">{coord.designation || '-'}</p>
                   {coord.email && (
                     <p className="text-[10px] text-[#8FBCA7] truncate mt-1 flex items-center space-x-1">
@@ -961,8 +961,8 @@ export const SchoolProfileView: React.FC = () => {
                 className="p-4 rounded-xl border border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#0E3322]/40 text-[#A7D7C1] hover:text-[#FFFDF9] flex flex-col items-center justify-center text-center space-y-1.5 transition-colors min-h-[105px]"
               >
                 <Plus className="w-5 h-5 text-[#F0D283]" />
-                <span className="text-xs font-semibold text-[#F0D283]">Magdagdag / Magbawas ng Leads</span>
-                <span className="text-[10px] text-[#8FBCA7]">I-adjust ang talaan ng coordinators</span>
+                <span className="text-xs font-semibold text-[#F0D283]">Manage Dimension Leads</span>
+                <span className="text-[10px] text-[#8FBCA7]">Add, remove, or adjust coordinators</span>
               </button>
             )}
           </div>
@@ -1148,7 +1148,7 @@ export const SchoolProfileView: React.FC = () => {
                   <div className="p-3 bg-emerald-950/30 rounded-xl border border-emerald-500/30 text-[#D1E7DD] text-xs flex items-start space-x-2">
                     <Shield className="w-4 h-4 text-[#F0D283] flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-[#F0D283]">Pamamahala sa Dami ng Signatories:</span> Dahil marami ang signatories sa DepEd SBM reports, may kalayaan kang tanggalin o i-delete ang mga opsyonal na signatory (tulad ng Assistant Principal, Division SBM Validator, o SDS) upang mapaikli ang lagdaan. Maaari mo rin silang ibalik anumang oras.
+                      <span className="font-bold text-[#F0D283]">Signatories Management:</span> You have full flexibility to exclude optional signatories (such as Assistant Principal, Division SBM Validator, or SDS) to streamline the endorsement sheet. You can restore them anytime.
                     </div>
                   </div>
 
@@ -1201,7 +1201,7 @@ export const SchoolProfileView: React.FC = () => {
                     {/* Assistant Principal Section with Delete / Restore */}
                     <div className="pt-3 border-t border-[#D4AF37]/15">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-[#A7D7C1] text-xs">Assistant Principal (Opsyonal)</span>
+                        <span className="font-bold text-[#A7D7C1] text-xs">Assistant Principal (Optional)</span>
                         {profileForm.assistantPrincipal ? (
                           <button
                             type="button"
@@ -1209,7 +1209,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 hover:bg-rose-900/60 hover:text-white flex items-center space-x-1 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Alisin / I-delete Signatory</span>
+                            <span>Remove Signatory</span>
                           </button>
                         ) : (
                           <button
@@ -1218,7 +1218,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 flex items-center space-x-1 transition-colors"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Idagdag / I-restore</span>
+                            <span>Add / Restore</span>
                           </button>
                         )}
                       </div>
@@ -1231,7 +1231,7 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.assistantPrincipal}
                               onChange={(e) => setProfileForm({ ...profileForm, assistantPrincipal: e.target.value })}
-                              placeholder="Hal. Dr. Marilou C. Alcantara"
+                              placeholder="e.g. Dr. Marilou C. Alcantara"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
@@ -1241,14 +1241,14 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.assistantPrincipalTitle}
                               onChange={(e) => setProfileForm({ ...profileForm, assistantPrincipalTitle: e.target.value })}
-                              placeholder="Hal. Assistant Principal for Academics"
+                              placeholder="e.g. Assistant Principal for Academics"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
                         </div>
                       ) : (
                         <div className="p-3 bg-[#061810] border border-dashed border-[#D4AF37]/25 rounded-xl text-xs text-[#8FBCA7] flex items-center justify-between">
-                          <span>Naka-delete / hindi kasama ang Assistant Principal sa talaan ng mga signatories.</span>
+                          <span>Assistant Principal is excluded from official signatories.</span>
                         </div>
                       )}
                     </div>
@@ -1257,7 +1257,7 @@ export const SchoolProfileView: React.FC = () => {
                   {/* Division Level Authorities Section with Delete / Restore */}
                   <div className="p-4 bg-[#061810]/80 rounded-xl border border-[#D4AF37]/20 space-y-4">
                     <span className="font-bold text-[#F0D283] block uppercase tracking-wider text-[11px]">
-                      Division Level Authorities & Validators (Opsyonal)
+                      Division Level Authorities & Validators (Optional)
                     </span>
 
                     {/* SDO Validator */}
@@ -1271,7 +1271,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 hover:bg-rose-900/60 hover:text-white flex items-center space-x-1 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Alisin / I-delete Signatory</span>
+                            <span>Remove Signatory</span>
                           </button>
                         ) : (
                           <button
@@ -1280,7 +1280,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 flex items-center space-x-1 transition-colors"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Idagdag / I-restore</span>
+                            <span>Add / Restore</span>
                           </button>
                         )}
                       </div>
@@ -1293,7 +1293,7 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.divisionValidator}
                               onChange={(e) => setProfileForm({ ...profileForm, divisionValidator: e.target.value })}
-                              placeholder="Hal. Dr. Maria Elena V. Gonzales"
+                              placeholder="e.g. Dr. Maria Elena V. Gonzales"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
@@ -1303,14 +1303,14 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.divisionValidatorTitle}
                               onChange={(e) => setProfileForm({ ...profileForm, divisionValidatorTitle: e.target.value })}
-                              placeholder="Hal. Division SBM Validator / EPS - SDO QC"
+                              placeholder="e.g. Division SBM Validator / EPS - SDO QC"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
                         </div>
                       ) : (
                         <div className="p-3 bg-[#061810] border border-dashed border-[#D4AF37]/25 rounded-xl text-xs text-[#8FBCA7]">
-                          Naka-delete / hindi kasama ang Division SBM Validator sa mga signatories.
+                          Division SBM Validator is excluded from official signatories.
                         </div>
                       )}
                     </div>
@@ -1326,7 +1326,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 hover:bg-rose-900/60 hover:text-white flex items-center space-x-1 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Alisin / I-delete Signatory</span>
+                            <span>Remove Signatory</span>
                           </button>
                         ) : (
                           <button
@@ -1335,7 +1335,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="px-2.5 py-1 text-xs rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 flex items-center space-x-1 transition-colors"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Idagdag / I-restore</span>
+                            <span>Add / Restore</span>
                           </button>
                         )}
                       </div>
@@ -1348,7 +1348,7 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.divisionSuperintendent}
                               onChange={(e) => setProfileForm({ ...profileForm, divisionSuperintendent: e.target.value })}
-                              placeholder="Hal. Carleen S. Sedilla, CESO V"
+                              placeholder="e.g. Carleen S. Sedilla, CESO V"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
@@ -1358,14 +1358,14 @@ export const SchoolProfileView: React.FC = () => {
                               type="text"
                               value={profileForm.divisionSuperintendentTitle}
                               onChange={(e) => setProfileForm({ ...profileForm, divisionSuperintendentTitle: e.target.value })}
-                              placeholder="Hal. Schools Division Superintendent"
+                              placeholder="e.g. Schools Division Superintendent"
                               className="w-full p-2.5 bg-[#092217] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
                             />
                           </div>
                         </div>
                       ) : (
                         <div className="p-3 bg-[#061810] border border-dashed border-[#D4AF37]/25 rounded-xl text-xs text-[#8FBCA7]">
-                          Naka-delete / hindi kasama ang Superintendent sa talaan ng mga signatories.
+                          Superintendent is excluded from official signatories.
                         </div>
                       )}
                     </div>
@@ -1376,9 +1376,9 @@ export const SchoolProfileView: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-bold text-[#F0D283] block uppercase tracking-wider text-[11px]">
-                          Karagdagang Custom Signatories (Opsyonal)
+                          Additional Custom Signatories (Optional)
                         </span>
-                        <p className="text-[11px] text-[#8FBCA7]">Hal. PTA President, Faculty Club President, Barangay Captain</p>
+                        <p className="text-[11px] text-[#8FBCA7]">e.g. PTA President, Faculty Club President, Barangay Captain</p>
                       </div>
                       <button
                         type="button"
@@ -1386,13 +1386,13 @@ export const SchoolProfileView: React.FC = () => {
                         className="px-3 py-1.5 rounded-lg bg-[#0E3824] hover:bg-[#12452D] border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold flex items-center space-x-1.5 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Magdagdag ng Signatory</span>
+                        <span>Add Signatory</span>
                       </button>
                     </div>
 
                     {(profileForm.customSignatories || []).length === 0 ? (
                       <div className="p-3 bg-[#061810] border border-dashed border-[#D4AF37]/20 rounded-xl text-xs text-[#8FBCA7] text-center">
-                        Walang dagdag na signatories. I-click ang button sa itaas kung may nais idagdag.
+                        No additional signatories. Click the button above to add custom signatories.
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -1406,37 +1406,37 @@ export const SchoolProfileView: React.FC = () => {
                                 className="text-rose-400 hover:text-rose-300 flex items-center space-x-1 text-xs"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                                <span>I-delete</span>
+                                <span>Remove</span>
                               </button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                               <div>
-                                <label className="block text-[#E2F0EA] mb-0.5">Role / Kapasidad</label>
+                                <label className="block text-[#E2F0EA] mb-0.5">Role / Capacity</label>
                                 <input
                                   type="text"
                                   value={sig.roleLabel}
                                   onChange={(e) => handleUpdateCustomSignatory(sig.id, 'roleLabel', e.target.value)}
-                                  placeholder="Hal. PTA President"
+                                  placeholder="e.g. PTA President"
                                   className="w-full p-2 bg-[#061810] border border-[#D4AF37]/30 rounded-lg text-[#FFFDF9]"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[#E2F0EA] mb-0.5">Pangalan</label>
+                                <label className="block text-[#E2F0EA] mb-0.5">Full Name</label>
                                 <input
                                   type="text"
                                   value={sig.name}
                                   onChange={(e) => handleUpdateCustomSignatory(sig.id, 'name', e.target.value)}
-                                  placeholder="Hal. Juan Dela Cruz"
+                                  placeholder="e.g. Juan Dela Cruz"
                                   className="w-full p-2 bg-[#061810] border border-[#D4AF37]/30 rounded-lg text-[#FFFDF9]"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[#E2F0EA] mb-0.5">Designation / Opisina</label>
+                                <label className="block text-[#E2F0EA] mb-0.5">Designation / Office</label>
                                 <input
                                   type="text"
                                   value={sig.title}
                                   onChange={(e) => handleUpdateCustomSignatory(sig.id, 'title', e.target.value)}
-                                  placeholder="Hal. General PTA President"
+                                  placeholder="e.g. General PTA President"
                                   className="w-full p-2 bg-[#061810] border border-[#D4AF37]/30 rounded-lg text-[#FFFDF9]"
                                 />
                               </div>
@@ -1454,7 +1454,7 @@ export const SchoolProfileView: React.FC = () => {
                 <div className="space-y-4">
                   <div className="p-3 bg-[#061810]/70 rounded-xl border border-[#D4AF37]/20 text-[#D1E7DD] text-xs flex items-center justify-between">
                     <div>
-                      Specify the assigned Lead Person and designation for the SBM Dimensions. Maaari kang mag-delete o magbawas ng coordinators kung kinakailangan.
+                      Specify the assigned Lead Person and designation for the SBM Dimensions. You can remove or add coordinators as needed.
                     </div>
                     <button
                       type="button"
@@ -1462,7 +1462,7 @@ export const SchoolProfileView: React.FC = () => {
                       className="px-3 py-1.5 rounded-lg bg-[#0E3824] hover:bg-[#12452D] border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold flex items-center space-x-1.5 flex-shrink-0 ml-3 transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Magdagdag ng Lead</span>
+                      <span>Add Lead</span>
                     </button>
                   </div>
                   <div className="space-y-3">
@@ -1481,7 +1481,7 @@ export const SchoolProfileView: React.FC = () => {
                             className="text-rose-400 hover:text-rose-300 flex items-center space-x-1 text-xs px-2 py-0.5 rounded hover:bg-rose-950/30 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            <span>Alisin / I-delete</span>
+                            <span>Remove</span>
                           </button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

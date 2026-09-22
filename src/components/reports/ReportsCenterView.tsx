@@ -468,7 +468,7 @@ export const ReportsCenterView: React.FC = () => {
                   Degrees of Manifestation Statistical Distribution & Calibration Matrix
                 </h3>
                 <p className="text-[11px] text-slate-500">
-                  Ayon sa DepEd Order No. 007, s. 2024. Maaari mong baguhin o i-calibrate ang bawat antas ng indikasyon direkta sa talahanayan sa ibaba.
+                  Compliant with DepEd Order No. 007, s. 2024. You can calibrate and review each degree of manifestation directly in the matrix table below.
                 </p>
               </div>
 

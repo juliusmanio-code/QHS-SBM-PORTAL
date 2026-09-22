@@ -146,7 +146,7 @@ export const IndicatorDetailView: React.FC<IndicatorDetailViewProps> = ({
       await updateIndicatorAssessment(indicatorNumber, {
         degreeOfManifestation: selectedDeg
       });
-      setDegreeSavedMessage(`Na-calibrate at na-save bilang "${selectedDeg}" para sa ${currentSchoolYear.label}`);
+      setDegreeSavedMessage(`Calibrated and saved as "${selectedDeg}" for ${currentSchoolYear.label}`);
       setTimeout(() => setDegreeSavedMessage(null), 3500);
     } catch (err) {
       alert('Error updating degree of manifestation: ' + err);

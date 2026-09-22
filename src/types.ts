@@ -249,6 +249,19 @@ export interface CustomSignatory {
   office?: string;
 }
 
+export interface DashboardBannerConfig {
+  badgeText?: string;
+  title?: string;
+  description?: string;
+  showAnnouncement?: boolean;
+  announcementText?: string;
+  announcementType?: 'gold' | 'emerald' | 'blue' | 'amber';
+  theme?: 'emerald_gold' | 'forest_classic' | 'midnight_jade' | 'royal_pine';
+  quickUploadVisible?: boolean;
+  quickAssessVisible?: boolean;
+  quickReportsVisible?: boolean;
+}
+
 export interface SchoolProfile {
   id: string;
   schoolName: string;
@@ -276,6 +289,7 @@ export interface SchoolProfile {
   divisionSuperintendentTitle?: string;
   dimensionCoordinators?: DimensionCoordinator[];
   customSignatories?: CustomSignatory[];
+  dashboardBanner?: DashboardBannerConfig;
   history: string;
   vision: string;
   depEdVision?: string;
