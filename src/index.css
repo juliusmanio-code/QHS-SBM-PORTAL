@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Soothing Dark Green & Heritage Gold Theme */
+    --bg-app: #0A1C14;
+    --bg-sidebar: #06140E;
+    --bg-header: #081710;
+    --bg-card: rgba(13, 46, 31, 0.85);
+    --bg-card-elevated: rgba(19, 58, 41, 0.9);
+    --bg-card-subtle: rgba(8, 30, 20, 0.8);
+    --accent-gold: #D4AF37;
+    --accent-gold-light: #F0D283;
+    --accent-gold-dark: #A8831A;
+    --accent-emerald: #10B981;
+    --accent-emerald-light: #34D399;
+    --accent-maroon: #6B1724;
+    --text-primary: #FFFDF9;
+    --text-secondary: #F0D283;
+    --text-muted: #B4D5C5;
+    --border-gold: rgba(212, 175, 55, 0.3);
+    --border-emerald: rgba(52, 211, 153, 0.25);
+  }
+
+  body {
+    background-color: #081A12;
+    color: #FFFDF9;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif-display {
+    letter-spacing: -0.015em;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #06140E;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #133D2B;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D4AF37;
+  }
+}
+
+/* Soothing Transparent Green Surface Overrides for All Light/White Classes */
+.bg-white,
+[class*="bg-white"] {
+  background-color: rgba(13, 46, 31, 0.88) !important;
+  border-color: rgba(212, 175, 55, 0.28) !important;
+  color: #FFFDF9 !important;
+}
+
+.bg-slate-50,
+[class*="bg-slate-50"] {
+  background-color: rgba(10, 36, 24, 0.85) !important;
+  border-color: rgba(212, 175, 55, 0.22) !important;
+  color: #FFFDF9 !important;
+}
+
+.bg-slate-100,
+[class*="bg-slate-100"] {
+  background-color: rgba(16, 54, 37, 0.9) !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+  color: #FFFDF9 !important;
+}
+
+.bg-slate-200,
+[class*="bg-slate-200"] {
+  background-color: rgba(22, 68, 47, 0.95) !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+.bg-slate-800 {
+  background-color: #06170F !important;
+}
+
+.bg-slate-900 {
+  background-color: #04100A !important;
+}
+
+.bg-slate-950 {
+  background-color: #020A06 !important;
+}
+
+/* Text Colors - High Contrast Legibility */
+.text-slate-900 {
+  color: #FFFDF9 !important;
+}
+
+.text-slate-800 {
+  color: #FFFDF9 !important;
+}
+
+.text-slate-700 {
+  color: #F0D283 !important;
+}
+
+.text-slate-600 {
+  color: #E2F0EA !important;
+}
+
+.text-slate-500 {
+  color: #B4D5C5 !important;
+}
+
+.text-slate-400 {
+  color: #8FBCA7 !important;
+}
+
+/* Borders & Dividers */
+.border-slate-200,
+.border-slate-300,
+.border-slate-100,
+.border-slate-300\/80,
+.border-slate-400,
+[class*="border-slate-"] {
+  border-color: rgba(212, 175, 55, 0.25) !important;
+}
+
+.divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-800 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(212, 175, 55, 0.18) !important;
+}
+
+/* Blue & Indigo accents harmonized with Green & Gold */
+.bg-blue-600,
+.bg-blue-700 {
+  background-color: #155E3F !important;
+  color: #FFFDF9 !important;
+  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+
+.bg-blue-600:hover,
+.hover\:bg-blue-700:hover,
+.bg-blue-700:hover {
+  background-color: #1A754E !important;
+  color: #FFFDF9 !important;
+}
+
+.bg-blue-900 {
+  background-color: #0B3322 !important;
+  color: #F0D283 !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+
+.text-blue-600,
+.text-blue-700,
+.text-blue-800,
+.text-blue-900 {
+  color: #F0D283 !important;
+}
+
+.bg-blue-50,
+.bg-blue-100,
+[class*="bg-blue-50"] {
+  background-color: rgba(13, 46, 31, 0.9) !important;
+  color: #F0D283 !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+.border-blue-200,
+.border-blue-300 {
+  border-color: rgba(212, 175, 55, 0.35) !important;
+}
+
+.hover\:bg-slate-50:hover,
+.hover\:bg-slate-100:hover,
+.hover\:bg-blue-50\/60:hover {
+  background-color: rgba(22, 68, 47, 0.9) !important;
+}
+
+.hover\:bg-slate-200:hover {
+  background-color: rgba(28, 84, 58, 0.95) !important;
+}
+
+/* Inputs & Form Controls */
+input,
+select,
+textarea {
+  background-color: #071D14 !important;
+  color: #FFFDF9 !important;
+  border-color: rgba(212, 175, 55, 0.35) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #D4AF37 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px #D4AF37 !important;
+}
+
+/* Modals & Popovers Backdrop */
+.bg-slate-900\/50,
+.bg-slate-900\/60,
+.bg-black\/50,
+.bg-black\/60,
+.bg-black\/70 {
+  background-color: rgba(4, 16, 10, 0.85) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Custom green & gold utilities */
+.green-card {
+  background-color: rgba(13, 46, 31, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: #FFFDF9;
+}
+
+.gold-badge {
+  background-color: rgba(212, 175, 55, 0.15);
+  color: #F0D283;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.gold-btn {
+  background: linear-gradient(135deg, #D4AF37 0%, #B88E1F 100%) !important;
+  color: #061A11 !important;
+  font-weight: 700;
+  border: 1px solid #F0D283;
+  transition: all 0.2s ease;
+}
+
+.gold-btn:hover {
+  background: linear-gradient(135deg, #F0D283 0%, #D4AF37 100%) !important;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+  transform: translateY(-1px);
+}
+
+.gold-outline-btn {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: #F0D283;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  transition: all 0.2s ease;
+}
+
+.gold-outline-btn:hover {
+  background-color: rgba(212, 175, 55, 0.22);
+  border-color: #D4AF37;
+  color: #FFFDF9;
+}

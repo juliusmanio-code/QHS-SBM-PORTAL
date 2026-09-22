@@ -1,0 +1,6 @@
+{
+  "name": "QHS SBM PORTAL",
+  "description": "Quirino High School SBM Portal aligned with DepEd Order No. 007, s. 2024 with 6 dimensions and 42 indicators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

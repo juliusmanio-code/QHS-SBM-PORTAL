@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User account details, assigned roles, department, and SBM dimension assignments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["super_admin", "school_head", "sbm_coordinator", "dimension_leader", "contributor", "validator", "public_visitor"] },
+        "department": { "type": "string" },
+        "assignedDimensions": { "type": "array", "items": { "type": "number" } },
+        "assignedIndicators": { "type": "array", "items": { "type": "number" } },
+        "status": { "type": "string", "enum": ["approved", "pending", "rejected", "inactive"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "email", "displayName", "role", "status"]
+    },
+    "SchoolYear": {
+      "title": "School Year",
+      "description": "Academic school year configuration for SBM tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "isCurrent": { "type": "boolean" },
+        "isArchived": { "type": "boolean" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "label", "isCurrent"]
+    },
+    "MovRecord": {
+      "title": "Means of Verification (MOV) Record",
+      "description": "Evidence document uploaded to satisfy an SBM indicator requirement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolYearId": { "type": "string" },
+        "dimensionId": { "type": "number" },
+        "indicatorNumber": { "type": "number" },
+        "requiredMovItemId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "storagePath": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "originalFilename": { "type": "string" },
+        "sanitizedFilename": { "type": "string" },
+        "fileType": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "version": { "type": "number" },
+        "documentDate": { "type": "string" },
+        "coveragePeriod": { "type": "string" },
+        "originatingOffice": { "type": "string" },
+        "uploaderId": { "type": "string" },
+        "uploaderName": { "type": "string" },
+        "uploaderEmail": { "type": "string" },
+        "assignedReviewerId": { "type": "string" },
+        "submissionStatus": { "type": "string", "enum": ["draft", "submitted", "under_review", "needs_revision", "resubmitted", "verified", "approved", "archived"] },
+        "confidentialityLevel": { "type": "string", "enum": ["public", "internal", "restricted", "confidential"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isArchived": { "type": "boolean" },
+        "isLocked": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "schoolYearId", "dimensionId", "indicatorNumber", "title", "submissionStatus", "confidentialityLevel"]
+    },
+    "AuditLog": {
+      "title": "Audit Log Event",
+      "description": "Append-only record of system activity, uploads, reviews, approvals, and security events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "actorId": { "type": "string" },
+        "actorName": { "type": "string" },
+        "actorEmail": { "type": "string" },
+        "actorRole": { "type": "string" },
+        "action": { "type": "string" },
+        "affectedRecordType": { "type": "string" },
+        "affectedRecordId": { "type": "string" },
+        "previousValue": { "type": "string" },
+        "newValue": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "actorId", "actorName", "action", "affectedRecordType", "affectedRecordId"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "UserProfile",
+      "description": "User profiles and RBAC role assignments"
+    },
+    "schoolYears": {
+      "schema": "SchoolYear",
+      "description": "Academic school years"
+    },
+    "movRecords": {
+      "schema": "MovRecord",
+      "description": "SBM Means of Verification documents and metadata"
+    },
+    "auditLogs": {
+      "schema": "AuditLog",
+      "description": "System and security audit records"
+    }
+  }
+}

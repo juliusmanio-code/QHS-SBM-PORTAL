@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isApproved() {
+      return isSignedIn() && (
+        getUserData().status == 'approved' ||
+        request.auth.token.email == 'julius.manio@depedqc.ph'
+      );
+    }
+    
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        getUserData().role == 'super_admin' ||
+        request.auth.token.email == 'julius.manio@depedqc.ph'
+      );
+    }
+    
+    function isSchoolHead() {
+      return isApproved() && (getUserData().role == 'school_head' || isSuperAdmin());
+    }
+    
+    function isCoordinator() {
+      return isApproved() && (getUserData().role == 'sbm_coordinator' || isSuperAdmin() || isSchoolHead());
+    }
+    
+    // User collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSuperAdmin() || (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status']));
+      allow delete: if isSuperAdmin();
+    }
+    
+    // Master data: School Years, Dimensions, Indicators
+    match /schoolYears/{yearId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCoordinator();
+    }
+    
+    match /dimensions/{dimId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCoordinator();
+    }
+    
+    match /indicators/{indId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCoordinator();
+    }
+    
+    match /indicatorYearRecords/{recId} {
+      allow read: if isSignedIn();
+      allow write: if isApproved();
+    }
+    
+    match /requiredMovItems/{itemId} {
+      allow read: if isSignedIn();
+      allow write: if isApproved();
+    }
+    
+    // MOV records & versions
+    match /movRecords/{movId} {
+      allow read: if isSignedIn();
+      allow create: if isApproved();
+      allow update: if isApproved();
+      allow delete: if isSuperAdmin();
+    }
+    
+    match /movVersions/{verId} {
+      allow read: if isSignedIn();
+      allow create: if isApproved();
+      allow update: if isApproved();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // Reviews & Comments
+    match /reviews/{revId} {
+      allow read: if isSignedIn();
+      allow write: if isApproved();
+    }
+    
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isApproved();
+      allow update, delete: if isSuperAdmin() || (isApproved() && resource.data.authorId == request.auth.uid);
+    }
+    
+    // School Profile & School Report Cards & Announcements
+    match /schoolProfile/{profId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isSchoolHead() || isCoordinator();
+    }
+    
+    match /schoolReportCards/{srcId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isSchoolHead() || isCoordinator();
+    }
+    
+    match /announcements/{annId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isSchoolHead() || isCoordinator();
+    }
+    
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && resource.data.recipientUserId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.recipientUserId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.recipientUserId == request.auth.uid;
+    }
+    
+    // Audit logs: Append-only, read for admins & school head
+    match /auditLogs/{logId} {
+      allow read: if isSuperAdmin() || isSchoolHead();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Append-only audit logs cannot be edited or deleted
+    }
+    
+    // System Settings
+    match /systemSettings/{setId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+  }
+}
