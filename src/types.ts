@@ -262,6 +262,17 @@ export interface DashboardBannerConfig {
   quickReportsVisible?: boolean;
 }
 
+export interface DimensionProgress {
+  dimensionId: number;
+  name: string;
+  totalIndicators: number;
+  applicableIndicators: number;
+  completedIndicators: number;
+  missingMovsCount: number;
+  completionPercentage: number;
+  degrees?: Record<DegreeOfManifestation, number>;
+}
+
 export interface SchoolProfile {
   id: string;
   schoolName: string;

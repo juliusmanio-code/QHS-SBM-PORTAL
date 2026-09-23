@@ -15,7 +15,10 @@ import {
   ChevronRight,
   AlertCircle,
   Edit3,
-  Megaphone
+  Megaphone,
+  Compass,
+  Columns,
+  BarChart2
 } from 'lucide-react';
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,6 +27,7 @@ import { StatusBadge } from '../common/StatusBadge';
 import { ConfidentialityBadge } from '../common/ConfidentialityBadge';
 import { DegreeOfManifestation, DashboardBannerConfig } from '../../types';
 import { BannerEditorModal } from './BannerEditorModal';
+import { DimensionRadarChart } from './DimensionRadarChart';
 
 interface SbmDashboardViewProps {
   onNavigateToDimension: (dimensionId: number) => void;
@@ -47,6 +51,7 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
   const { currentSchoolYear, progressStats, movRecords, reviews, requiredMovItems, schoolProfile, updateSchoolProfile } = useSbmData();
   const { userProfile, role } = useAuth();
   const [isEditingBanner, setIsEditingBanner] = useState(false);
+  const [dimensionDisplayMode, setDimensionDisplayMode] = useState<'split' | 'radar' | 'bars'>('split');
 
   // Check if role is authorized to edit dashboard banner
   const canEditBanner = role === 'super_admin' || role === 'school_head' || role === 'sbm_coordinator';
@@ -286,78 +291,161 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Middle Section: 6 SBM Dimensions Progress & Manifestation Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 6 Dimensions Progress Bars (2 cols) */}
-        <div className="lg:col-span-2 bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/30 shadow-md space-y-4">
-          <div className="flex items-center justify-between">
+      {/* Middle Section: 6 SBM Dimensions Performance & Radar Profile */}
+      <div className="space-y-4">
+        {/* Section Header with View Mode Switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#092217]/70 p-3.5 rounded-2xl border border-[#D4AF37]/25">
+          <div className="flex items-center space-x-2.5">
+            <div className="p-2 bg-[#061810] rounded-xl border border-[#D4AF37]/30 text-[#F0D283]">
+              <Compass className="w-4 h-4" />
+            </div>
             <div>
-              <h3 className="text-base font-bold text-[#FFFDF9]">
-                Official Six SBM Dimensions Overview
+              <h3 className="text-sm font-bold text-[#FFFDF9]">
+                SBM Dimensions Performance & Radar Analytics
               </h3>
-              <p className="text-xs text-[#8FBCA7]">
-                Compliance percentage and missing evidence by dimension for {currentSchoolYear.label}
+              <p className="text-[11px] text-[#8FBCA7]">
+                Operational balance and indicator completion under DepEd Order No. 007, s. 2024
               </p>
             </div>
-            <button
-              onClick={() => onNavigateToDimension(1)}
-              className="text-xs font-semibold text-[#F0D283] hover:text-[#FFFDF9] flex items-center space-x-1"
-            >
-              <span>View All Dimensions</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
           </div>
 
-          <div className="space-y-3.5">
-            {progressStats.dimensionProgress.map((dim) => (
-              <div
-                key={dim.dimensionId}
-                id={`dashboard-dim-progress-${dim.dimensionId}`}
-                onClick={() => onNavigateToDimension(dim.dimensionId)}
-                className="p-3.5 rounded-xl bg-[#092217]/90 hover:bg-[#123E2A] border border-[#D4AF37]/25 transition-all cursor-pointer group shadow-xs"
+          <div className="flex items-center space-x-2 self-start sm:self-auto">
+            <div className="flex items-center space-x-1 p-1 bg-[#061810] rounded-xl border border-[#D4AF37]/30 text-xs">
+              <button
+                type="button"
+                id="dimension-view-split-btn"
+                onClick={() => setDimensionDisplayMode('split')}
+                className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all text-xs ${
+                  dimensionDisplayMode === 'split'
+                    ? 'bg-[#0E3824] text-[#F0D283] font-bold shadow-xs border border-[#D4AF37]/50'
+                    : 'text-[#8FBCA7] hover:text-[#FFFDF9]'
+                }`}
+                title="View Radar Chart and Progress List side by side"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-lg bg-[#05160E] text-[#F0D283] font-black text-xs flex items-center justify-center border border-[#D4AF37]/35">
-                      D{dim.dimensionId}
-                    </span>
-                    <span className="text-xs font-bold text-[#FFFDF9] group-hover:text-[#F0D283] transition-colors">
-                      {dim.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-xs">
-                    <span className="text-[#8FBCA7] font-medium">
-                      {dim.completedIndicators}/{dim.totalIndicators} Approved
-                    </span>
-                    <span className="font-bold text-[#F0D283]">{dim.completionPercentage}%</span>
-                  </div>
-                </div>
-
-                <div className="w-full bg-[#05160E] rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-[#D4AF37] to-emerald-400 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${dim.completionPercentage}%` }}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between mt-2 text-[11px] text-[#8FBCA7]">
-                  <span>Applicable: {dim.applicableIndicators}</span>
-                  {dim.missingMovsCount > 0 ? (
-                    <span className="text-amber-400 font-medium">
-                      ⚠️ {dim.missingMovsCount} missing required checklist items
-                    </span>
-                  ) : (
-                    <span className="text-emerald-400 font-medium">
-                      ✓ All required MOVs accounted
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+                <Columns className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Split View</span>
+              </button>
+              <button
+                type="button"
+                id="dimension-view-radar-btn"
+                onClick={() => setDimensionDisplayMode('radar')}
+                className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all text-xs ${
+                  dimensionDisplayMode === 'radar'
+                    ? 'bg-[#0E3824] text-[#F0D283] font-bold shadow-xs border border-[#D4AF37]/50'
+                    : 'text-[#8FBCA7] hover:text-[#FFFDF9]'
+                }`}
+                title="Full width radar chart visualization"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>Radar Focus</span>
+              </button>
+              <button
+                type="button"
+                id="dimension-view-bars-btn"
+                onClick={() => setDimensionDisplayMode('bars')}
+                className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all text-xs ${
+                  dimensionDisplayMode === 'bars'
+                    ? 'bg-[#0E3824] text-[#F0D283] font-bold shadow-xs border border-[#D4AF37]/50'
+                    : 'text-[#8FBCA7] hover:text-[#FFFDF9]'
+                }`}
+                title="Full width progress bars list"
+              >
+                <BarChart2 className="w-3.5 h-3.5" />
+                <span>Progress List</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Manifestation Distribution & Quick Health (1 col) */}
+        {/* Dynamic Display Layout based on dimensionDisplayMode */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          {/* Radar Chart (shown in split or radar mode) */}
+          {(dimensionDisplayMode === 'split' || dimensionDisplayMode === 'radar') && (
+            <div className={dimensionDisplayMode === 'split' ? 'xl:col-span-5 min-w-0' : 'xl:col-span-12 min-w-0'}>
+              <DimensionRadarChart
+                dimensionProgress={progressStats.dimensionProgress}
+                onNavigateToDimension={onNavigateToDimension}
+                schoolYearLabel={currentSchoolYear.label}
+              />
+            </div>
+          )}
+
+          {/* Progress Bars List (shown in split or bars mode) */}
+          {(dimensionDisplayMode === 'split' || dimensionDisplayMode === 'bars') && (
+            <div className={`${dimensionDisplayMode === 'split' ? 'xl:col-span-7' : 'xl:col-span-12'} bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/30 shadow-md space-y-4`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-[#FFFDF9]">
+                    Official Six SBM Dimensions Overview
+                  </h3>
+                  <p className="text-xs text-[#8FBCA7]">
+                    Compliance percentage and missing evidence by dimension for {currentSchoolYear.label}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigateToDimension(1)}
+                  className="text-xs font-semibold text-[#F0D283] hover:text-[#FFFDF9] flex items-center space-x-1"
+                >
+                  <span>View All Dimensions</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-3.5">
+                {progressStats.dimensionProgress.map((dim) => (
+                  <div
+                    key={dim.dimensionId}
+                    id={`dashboard-dim-progress-${dim.dimensionId}`}
+                    onClick={() => onNavigateToDimension(dim.dimensionId)}
+                    className="p-3.5 rounded-xl bg-[#092217]/90 hover:bg-[#123E2A] border border-[#D4AF37]/25 transition-all cursor-pointer group shadow-xs"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="w-6 h-6 rounded-lg bg-[#05160E] text-[#F0D283] font-black text-xs flex items-center justify-center border border-[#D4AF37]/35">
+                          D{dim.dimensionId}
+                        </span>
+                        <span className="text-xs font-bold text-[#FFFDF9] group-hover:text-[#F0D283] transition-colors">
+                          {dim.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-xs">
+                        <span className="text-[#8FBCA7] font-medium">
+                          {dim.completedIndicators}/{dim.totalIndicators} Approved
+                        </span>
+                        <span className="font-bold text-[#F0D283]">{dim.completionPercentage}%</span>
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-[#05160E] rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-[#D4AF37] to-emerald-400 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${dim.completionPercentage}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2 text-[11px] text-[#8FBCA7]">
+                      <span>Applicable: {dim.applicableIndicators}</span>
+                      {dim.missingMovsCount > 0 ? (
+                        <span className="text-amber-400 font-medium">
+                          ⚠️ {dim.missingMovsCount} missing required checklist items
+                        </span>
+                      ) : (
+                        <span className="text-emerald-400 font-medium">
+                          ✓ All required MOVs accounted
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tri-Column Analytics & Evidence Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Manifestation Distribution & Quick Health */}
         <div className="bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/30 shadow-md space-y-5 flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-[#FFFDF9]">
@@ -414,18 +502,15 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Section: Recent Evidence Uploads & Critical Missing MOVs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent MOV Uploads */}
         <div className="bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/30 shadow-md space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-[#FFFDF9]">
-                Recent MOV Evidence Submissions
+                Recent MOV Submissions
               </h3>
-              <p className="text-xs text-[#8FBCA7]">Latest files registered in SBM repository</p>
+              <p className="text-xs text-[#8FBCA7]">Latest files in SBM repository</p>
             </div>
             <button
               onClick={onNavigateToRepository}
@@ -466,7 +551,7 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Priority Missing Required MOVs */}
+        {/* Priority Missing Mandatory MOVs */}
         <div className="bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/30 shadow-md space-y-4">
           <div className="flex items-center justify-between">
             <div>
