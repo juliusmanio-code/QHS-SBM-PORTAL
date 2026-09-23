@@ -253,6 +253,7 @@ export interface DashboardBannerConfig {
   badgeText?: string;
   title?: string;
   description?: string;
+  bannerImageUrl?: string;
   showAnnouncement?: boolean;
   announcementText?: string;
   announcementType?: 'gold' | 'emerald' | 'blue' | 'amber';
@@ -279,6 +280,8 @@ export interface SchoolProfile {
   name?: string;
   logoUrl?: string;
   schoolLogo?: string;
+  bannerUrl?: string;
+  schoolBanner?: string;
   schoolId: string;
   division: string;
   region: string;
