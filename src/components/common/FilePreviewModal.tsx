@@ -36,6 +36,7 @@ import { StatusBadge } from './StatusBadge';
 import { ConfidentialityBadge } from './ConfidentialityBadge';
 import { useAuth } from '../../contexts/AuthContext';
 import { recordAuditEvent } from '../../lib/audit';
+import { PdfViewer } from './PdfViewer';
 
 interface FilePreviewModalProps {
   mov: MovRecord | null;
@@ -211,11 +212,24 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     if (blobUrl) {
       window.open(blobUrl, '_blank', 'noopener,noreferrer');
     } else if (mov.fileData) {
-      const newWin = window.open();
-      if (newWin) {
-        newWin.document.write(
-          `<iframe src="${mov.fileData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
-        );
+      try {
+        let base64 = mov.fileData;
+        let mimeType = mov.mimeType || 'application/pdf';
+        if (mov.fileData.startsWith('data:')) {
+          const parts = mov.fileData.split(';base64,');
+          mimeType = parts[0].replace('data:', '') || mimeType;
+          base64 = parts[1] || '';
+        }
+        const binaryString = atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: mimeType });
+        const tempUrl = URL.createObjectURL(blob);
+        window.open(tempUrl, '_blank', 'noopener,noreferrer');
+      } catch {
+        window.open(mov.fileData, '_blank');
       }
     }
   };
@@ -468,43 +482,15 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
                   {/* Stage Rendering Container */}
                   <div className="flex-1 min-h-[420px] bg-[#05160E] rounded-2xl border border-[#D4AF37]/30 overflow-hidden relative flex flex-col">
-                    {/* PDF Rendering */}
+                    {/* PDF Rendering via pure HTML5 Canvas (Bypasses Chrome iframe block) */}
                     {isPdf ? (
-                      blobUrl ? (
-                        <iframe
-                          src={`${blobUrl}#toolbar=1&navpanes=1`}
-                          title={mov.title}
-                          className="w-full flex-1 min-h-[480px] rounded-2xl border-0 bg-slate-800"
-                        />
-                      ) : (
-                        <div className="m-auto p-8 text-center max-w-md space-y-4">
-                          <FileText className="w-16 h-16 text-rose-400 mx-auto" />
-                          <div>
-                            <h4 className="text-base font-bold text-[#FFFDF9]">
-                              Official DepEd PDF Document
-                            </h4>
-                            <p className="text-xs text-[#8FBCA7] mt-1">
-                              {mov.title} • {mov.originalFilename}
-                            </p>
-                          </div>
-                          <div className="p-3 bg-[#0D2E1F] rounded-xl border border-[#D4AF37]/20 text-xs text-[#E2F0EA] space-y-1">
-                            <span className="font-semibold text-[#F0D283] flex items-center justify-center">
-                              <CheckCircle2 className="w-4 h-4 mr-1 text-emerald-400" /> SBM Repository Record Validated
-                            </span>
-                            <p className="text-[11px] text-[#8FBCA7]">
-                              Ready for SDO Quality Audit and Division Field Validation.
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleDownload}
-                            className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#B89628] text-slate-950 font-bold text-xs rounded-xl shadow-md inline-flex items-center space-x-1.5"
-                          >
-                            <Download className="w-4 h-4" />
-                            <span>Download Full PDF</span>
-                          </button>
-                        </div>
-                      )
+                      <PdfViewer
+                        fileData={mov.fileData}
+                        blobUrl={blobUrl || undefined}
+                        title={mov.title}
+                        onDownload={handleDownload}
+                        onOpenNewTab={handleOpenInNewTab}
+                      />
                     ) : null}
 
                     {/* Image Rendering */}
