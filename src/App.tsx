@@ -29,6 +29,7 @@ import { MovRecord } from './types';
 
 const MainAppContent: React.FC = () => {
   const { isPublicVisitor, role } = useAuth();
+  const { movRecords } = useSbmData();
 
   // Navigation State
   const [currentPage, setCurrentPage] = useState<NavigationPage>(
@@ -129,6 +130,7 @@ const MainAppContent: React.FC = () => {
                   setUploadDefaultIndicator(undefined);
                   setIsUploadOpen(true);
                 }}
+                onPreviewMov={(mov) => setPreviewMov(mov)}
               />
             )}
 
@@ -206,7 +208,11 @@ const MainAppContent: React.FC = () => {
         onClose={() => setIsSearchOpen(false)}
         onSelectIndicator={handleNavigateToIndicator}
         onSelectMov={(movId) => {
-          // Find mov and preview
+          const found = movRecords.find((m) => m.id === movId);
+          if (found) {
+            setPreviewMov(found);
+            setIsSearchOpen(false);
+          }
         }}
       />
 
@@ -228,6 +234,7 @@ const MainAppContent: React.FC = () => {
         mov={reviewingMov}
         isOpen={!!reviewingMov}
         onClose={() => setReviewingMov(null)}
+        onPreviewMov={(mov) => setPreviewMov(mov)}
       />
 
       <UnlockDialog

@@ -130,7 +130,7 @@ export interface MovRecord {
   title: string;
   description?: string;
   storagePath: string;
-  fileUrl: string;
+  fileUrl?: string;
   fileData?: string; // base64 or blob URL cache
   originalFilename: string;
   sanitizedFilename: string;

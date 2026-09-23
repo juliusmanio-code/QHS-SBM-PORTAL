@@ -18,14 +18,15 @@ import {
   Megaphone,
   Compass,
   Columns,
-  BarChart2
+  BarChart2,
+  Eye
 } from 'lucide-react';
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DegreeBadge } from '../common/DegreeBadge';
 import { StatusBadge } from '../common/StatusBadge';
 import { ConfidentialityBadge } from '../common/ConfidentialityBadge';
-import { DegreeOfManifestation, DashboardBannerConfig } from '../../types';
+import { DegreeOfManifestation, DashboardBannerConfig, MovRecord } from '../../types';
 import { BannerEditorModal } from './BannerEditorModal';
 import { DimensionRadarChart } from './DimensionRadarChart';
 
@@ -37,6 +38,7 @@ interface SbmDashboardViewProps {
   onNavigateToReviews: () => void;
   onNavigateToReports: () => void;
   onOpenUpload: () => void;
+  onPreviewMov?: (mov: MovRecord) => void;
 }
 
 export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
@@ -46,7 +48,8 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
   onNavigateToAssessment,
   onNavigateToReviews,
   onNavigateToReports,
-  onOpenUpload
+  onOpenUpload,
+  onPreviewMov
 }) => {
   const { currentSchoolYear, progressStats, movRecords, reviews, requiredMovItems, schoolProfile, updateSchoolProfile } = useSbmData();
   const { userProfile, role } = useAuth();
@@ -527,13 +530,15 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
               recentMovs.map((mov) => (
                 <div
                   key={mov.id}
-                  onClick={() => onNavigateToIndicator(mov.indicatorNumber)}
-                  className="py-3 flex items-start justify-between space-x-3 cursor-pointer hover:bg-[#123E2A] p-2 rounded-lg transition-colors"
+                  className="py-2.5 flex items-start justify-between space-x-3 hover:bg-[#123E2A] p-2 rounded-xl transition-colors group"
                 >
-                  <div className="space-y-1 truncate">
+                  <div
+                    onClick={() => (onPreviewMov ? onPreviewMov(mov) : onNavigateToIndicator(mov.indicatorNumber))}
+                    className="space-y-1 truncate cursor-pointer flex-1"
+                  >
                     <div className="flex items-center space-x-2">
                       <FileText className="w-3.5 h-3.5 text-[#F0D283] flex-shrink-0" />
-                      <span className="text-xs font-bold text-[#FFFDF9] truncate">
+                      <span className="text-xs font-bold text-[#FFFDF9] group-hover:text-[#F0D283] truncate transition-colors">
                         {mov.title}
                       </span>
                     </div>
@@ -542,6 +547,20 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
                     </p>
                   </div>
                   <div className="flex items-center space-x-2 flex-shrink-0">
+                    {onPreviewMov && (
+                      <button
+                        type="button"
+                        id={`dashboard-preview-mov-${mov.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPreviewMov(mov);
+                        }}
+                        className="p-1 rounded-lg bg-[#061810] text-[#8FBCA7] hover:text-[#F0D283] hover:bg-[#0E3824] border border-[#D4AF37]/25 transition-colors"
+                        title="Preview actual file"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <StatusBadge status={mov.submissionStatus} size="sm" />
                     <ConfidentialityBadge level={mov.confidentialityLevel} size="sm" />
                   </div>
