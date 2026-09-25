@@ -72,19 +72,44 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({
 
   return (
     <div id="public-portal-view" className="space-y-8">
-      {/* Hero Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+      {/* Hero Welcome Section - Picture Holder & Theme */}
+      <div className="relative rounded-3xl p-8 sm:p-12 text-white shadow-2xl overflow-hidden bg-gradient-to-r from-[#072015] via-[#0C301F] to-[#04140D] border border-[#D4AF37]/35">
+        {/* Banner Background Image */}
+        {(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner) && (
+          <>
+            <img
+              src={schoolProfile.bannerUrl || schoolProfile.schoolBanner}
+              alt="School Banner Cover"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Transparent overlay that clearly reveals the banner photo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#041A10]/60 via-[#072418]/40 to-[#03150D]/25" />
+            <div className="absolute inset-0 bg-black/10 backdrop-brightness-[0.98]" />
+          </>
+        )}
+
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-amber-300 text-xs font-semibold">
-            <Globe className="w-3.5 h-3.5" />
-            <span>Official SBM Public Transparency Portal</span>
+          <div className="flex items-center space-x-3">
+            {(schoolProfile?.logoUrl || schoolProfile?.schoolLogo) ? (
+              <div className="w-12 h-12 rounded-full bg-[#061810] border-2 border-[#D4AF37] p-0.5 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-lg">
+                <img
+                  src={schoolProfile.logoUrl || schoolProfile.schoolLogo}
+                  alt="School Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+            ) : null}
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Official SBM Public Transparency Portal</span>
+            </div>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-            Quirino High School
+            {schoolProfile?.schoolName || schoolProfile?.name || 'Quirino High School'}
           </h1>
 
-          <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed">
+          <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed">
             School-Based Management (SBM) Monitoring, Archiving, Repository, and Tracking Portal. Empowering continuous school improvement under DepEd Order No. 007, s. 2024.
           </p>
 
@@ -92,7 +117,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({
             <button
               id="public-hero-signin-btn"
               onClick={onOpenAuth}
-              className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-transform active:scale-95 flex items-center space-x-2"
+              className="gold-btn px-5 py-2.5 text-xs rounded-xl shadow-lg transition-transform active:scale-95 flex items-center space-x-2"
             >
               <LogIn className="w-4 h-4" />
               <span>Sign In as SBM Personnel</span>
@@ -101,7 +126,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({
             <button
               id="public-hero-src-btn"
               onClick={onNavigateToSrc}
-              className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-colors flex items-center space-x-2"
+              className="px-5 py-2.5 bg-[#061810]/80 hover:bg-[#0E3322] text-[#F0D283] font-semibold text-xs rounded-xl border border-[#D4AF37]/40 transition-colors flex items-center space-x-2"
             >
               <span>View School Report Card</span>
               <ArrowRight className="w-4 h-4" />

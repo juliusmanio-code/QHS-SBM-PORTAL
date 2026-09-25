@@ -86,7 +86,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             const parts = fileData.split(';base64,');
             base64 = parts[1] || '';
           }
-          const binaryString = atob(base64);
+          let binaryString = '';
+          try {
+            binaryString = atob(base64);
+          } catch {
+            binaryString = '';
+          }
           const len = binaryString.length;
           const bytes = new Uint8Array(len);
           for (let i = 0; i < len; i++) {
@@ -96,7 +101,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         } else if (blobUrl) {
           loadingTask = window.pdfjsLib.getDocument(blobUrl);
         } else {
-          throw new Error('No PDF source provided.');
+          setError('No PDF document source provided.');
+          setLoading(false);
+          return;
         }
 
         const doc = await loadingTask.promise;

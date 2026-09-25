@@ -15,7 +15,8 @@ import {
   AppNotification,
   SystemSettings,
   DegreeOfManifestation,
-  AuditLog
+  AuditLog,
+  SubmissionStatus
 } from '../types';
 import {
   INITIAL_SCHOOL_YEARS,
@@ -117,7 +118,28 @@ interface SbmDataContextType {
     updates: Partial<IndicatorYearRecord>,
     reason?: string
   ) => Promise<void>;
-  uploadMov: (data: Omit<MovRecord, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'isArchived' | 'isLocked'>) => Promise<MovRecord>;
+  uploadMov: (
+    data: Omit<
+      MovRecord,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'version'
+      | 'isArchived'
+      | 'isLocked'
+      | 'sanitizedFilename'
+      | 'uploaderId'
+      | 'uploaderName'
+      | 'uploaderEmail'
+      | 'submissionStatus'
+    > & {
+      sanitizedFilename?: string;
+      uploaderId?: string;
+      uploaderName?: string;
+      uploaderEmail?: string;
+      submissionStatus?: SubmissionStatus;
+    }
+  ) => Promise<MovRecord>;
   replaceMov: (movId: string, fileData: any, changeReason: string) => Promise<void>;
   submitMovForReview: (movId: string) => Promise<void>;
   reviewMov: (
@@ -126,10 +148,18 @@ interface SbmDataContextType {
     commentsText: string,
     checklist?: any
   ) => Promise<void>;
-  approveMov: (movId: string) => Promise<void>;
+  verifyMov: (
+    movId: string,
+    checklist?: any,
+    ratings?: { relevance?: number; completeness?: number; authenticity?: number },
+    commentsText?: string
+  ) => Promise<void>;
+  requestMovRevision: (movId: string, reasonText: string) => Promise<void>;
+  approveMov: (movId: string, remarks?: string) => Promise<void>;
   unlockMov: (movId: string, reason: string) => Promise<void>;
   archiveMov: (movId: string) => Promise<void>;
   restoreMov: (movId: string) => Promise<void>;
+  deleteMov: (movId: string) => Promise<void>;
   addComment: (
     recordType: 'indicator' | 'mov',
     recordId: string,
@@ -738,10 +768,15 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const uploadMov = async (
-    data: Omit<MovRecord, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'isArchived' | 'isLocked'>
+    data: any
   ): Promise<MovRecord> => {
     const newId = `mov-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newRecord: MovRecord = {
+      sanitizedFilename: data.originalFilename ? data.originalFilename.replace(/[^a-zA-Z0-9._-]/g, '_') : 'document.pdf',
+      uploaderId: userProfile?.id || 'anonymous',
+      uploaderName: userProfile?.displayName || 'DepEd Contributor',
+      uploaderEmail: userProfile?.email || 'contributor@depedqc.ph',
+      submissionStatus: 'submitted',
       ...data,
       id: newId,
       version: 1,
@@ -880,7 +915,33 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
-  const approveMov = async (movId: string) => {
+  const verifyMov = async (
+    movId: string,
+    checklist?: any,
+    ratings?: { relevance?: number; completeness?: number; authenticity?: number },
+    commentsText?: string
+  ) => {
+    setMovRecords((prev) =>
+      prev.map((m) => {
+        if (m.id === movId) {
+          return {
+            ...m,
+            relevanceRating: ratings?.relevance ?? m.relevanceRating,
+            completenessRating: ratings?.completeness ?? m.completenessRating,
+            authenticityRating: ratings?.authenticity ?? m.authenticityRating
+          };
+        }
+        return m;
+      })
+    );
+    await reviewMov(movId, 'verified', commentsText || 'Verified by Dimension Evaluator', checklist);
+  };
+
+  const requestMovRevision = async (movId: string, reasonText: string) => {
+    await reviewMov(movId, 'returned', reasonText);
+  };
+
+  const approveMov = async (movId: string, remarks?: string) => {
     const targetMov = movRecords.find((m) => m.id === movId);
     setMovRecords((prev) =>
       prev.map((m) =>
@@ -891,6 +952,7 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
               isLocked: true,
               approvedAt: new Date().toISOString(),
               approvedBy: userProfile?.displayName || 'School Head',
+              reviewerComments: remarks || m.reviewerComments,
               updatedAt: new Date().toISOString()
             }
           : m
@@ -903,7 +965,9 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
-    await recordAuditEvent(userProfile, 'APPROVE_MOV', 'MovRecord', movId);
+    await recordAuditEvent(userProfile, 'APPROVE_MOV', 'MovRecord', movId, {
+      reason: remarks
+    });
   };
 
   const unlockMov = async (movId: string, reason: string) => {
@@ -935,6 +999,29 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map((m) => (m.id === movId ? { ...m, isArchived: false, updatedAt: new Date().toISOString() } : m))
     );
     await recordAuditEvent(userProfile, 'RESTORE_MOV', 'MovRecord', movId);
+  };
+
+  const deleteMov = async (movId: string) => {
+    const targetMov = movRecords.find((m) => m.id === movId);
+    setMovRecords((prev) => prev.filter((m) => m.id !== movId));
+
+    if (targetMov?.requiredMovItemId) {
+      const otherMovsForReq = movRecords.filter(
+        (m) => m.id !== movId && m.requiredMovItemId === targetMov.requiredMovItemId && !m.isArchived
+      );
+      if (otherMovsForReq.length === 0) {
+        setRequiredMovItems((prev) =>
+          prev.map((req) =>
+            req.id === targetMov.requiredMovItemId ? { ...req, status: 'missing' } : req
+          )
+        );
+      }
+    }
+
+    await recordAuditEvent(userProfile, 'DELETE_MOV', 'MovRecord', movId, {
+      previousValue: targetMov?.title,
+      reason: `Deleted MOV file: ${targetMov?.originalFilename || movId}`
+    });
   };
 
   const addComment = async (
@@ -1069,10 +1156,13 @@ export const SbmDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       replaceMov,
       submitMovForReview,
       reviewMov,
+      verifyMov,
+      requestMovRevision,
       approveMov,
       unlockMov,
       archiveMov,
       restoreMov,
+      deleteMov,
       addComment,
       updateSchoolProfile,
       saveSchoolReportCard,

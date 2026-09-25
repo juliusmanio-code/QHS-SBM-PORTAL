@@ -22,7 +22,7 @@ export const ReplaceMovModal: React.FC<ReplaceMovModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { replaceMovVersion } = useSbmData();
+  const { replaceMov } = useSbmData();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string>('');
@@ -67,7 +67,7 @@ export const ReplaceMovModal: React.FC<ReplaceMovModalProps> = ({
     try {
       const ext = selectedFile.name.split('.').pop()?.toLowerCase() || 'pdf';
 
-      await replaceMovVersion(
+      await replaceMov(
         mov.id,
         {
           originalFilename: selectedFile.name,

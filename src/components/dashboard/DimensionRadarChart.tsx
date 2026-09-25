@@ -149,7 +149,7 @@ export const DimensionRadarChart: React.FC<DimensionRadarChartProps> = ({
             />
             <PolarAngleAxis
               dataKey="subject"
-              tick={({ payload, x, y, cx, cy, ...rest }) => {
+              tick={({ payload, x, y, cx, cy, verticalAnchor, ...rest }: any) => {
                 const dimId = parseInt(payload.value.substring(1, 2), 10);
                 const isHovered = activeDimensionId === dimId;
                 return (

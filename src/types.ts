@@ -235,10 +235,12 @@ export interface AuditLog {
 
 export interface DimensionCoordinator {
   dimensionId: number;
-  dimensionName: string;
-  leadName: string;
-  designation: string;
+  dimensionName?: string;
+  leadName?: string;
+  designation?: string;
   email?: string;
+  name?: string;
+  title?: string;
 }
 
 export interface CustomSignatory {

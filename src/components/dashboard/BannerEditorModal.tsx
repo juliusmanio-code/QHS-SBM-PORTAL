@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X,
   Save,
@@ -9,7 +9,10 @@ import {
   Upload,
   ArrowRight,
   Palette,
-  CheckCircle2
+  CheckCircle2,
+  Camera,
+  Image,
+  Trash2
 } from 'lucide-react';
 import { DashboardBannerConfig } from '../../types';
 
@@ -27,6 +30,7 @@ const DEFAULT_BANNER: DashboardBannerConfig = {
   badgeText: 'Official Policy DepEd Order No. 007, s. 2024',
   title: 'SBM Performance & Evidence Tracking — {SY}',
   description: 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.',
+  bannerImageUrl: '',
   showAnnouncement: false,
   announcementText: 'Reminder: Please ensure all SBM MOV files and documentary artifacts are submitted on time.',
   announcementType: 'gold',
@@ -45,10 +49,12 @@ export const BannerEditorModal: React.FC<BannerEditorModalProps> = ({
   userRole = 'School Administrator',
   onSave
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<DashboardBannerConfig>(() => ({
     badgeText: initialConfig?.badgeText ?? DEFAULT_BANNER.badgeText,
     title: initialConfig?.title ?? DEFAULT_BANNER.title,
     description: initialConfig?.description ?? DEFAULT_BANNER.description,
+    bannerImageUrl: initialConfig?.bannerImageUrl ?? DEFAULT_BANNER.bannerImageUrl,
     showAnnouncement: initialConfig?.showAnnouncement ?? DEFAULT_BANNER.showAnnouncement,
     announcementText: initialConfig?.announcementText ?? DEFAULT_BANNER.announcementText,
     announcementType: initialConfig?.announcementType ?? DEFAULT_BANNER.announcementType,
@@ -65,6 +71,19 @@ export const BannerEditorModal: React.FC<BannerEditorModalProps> = ({
 
   const handleReset = () => {
     setFormData({ ...DEFAULT_BANNER });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setFormData((prev) => ({ ...prev, bannerImageUrl: result }));
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,20 +151,34 @@ export const BannerEditorModal: React.FC<BannerEditorModalProps> = ({
             <span>Live Banner Preview</span>
           </span>
 
-          <div className={`rounded-xl p-5 shadow-lg border relative overflow-hidden transition-all ${getThemeClasses(formData.theme)}`}>
+          <div className={`rounded-xl p-5 shadow-lg border relative overflow-hidden transition-all min-h-[140px] flex flex-col justify-center ${getThemeClasses(formData.theme)}`}>
+            {/* Background Picture if set */}
+            {formData.bannerImageUrl && (
+              <>
+                <img
+                  src={formData.bannerImageUrl}
+                  alt="Banner Preview"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Transparent overlay that clearly reveals the banner image */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#041A10]/60 via-[#072418]/40 to-[#03150D]/25" />
+                <div className="absolute inset-0 bg-black/10 backdrop-brightness-[0.98]" />
+              </>
+            )}
+
             <div className="relative z-10 space-y-2">
               {formData.badgeText && (
-                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F0D283] text-[11px] font-semibold">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F0D283] text-[11px] font-semibold backdrop-blur-xs shadow-xs">
                   <span>{formData.badgeText}</span>
                 </div>
               )}
 
-              <h4 className="text-lg font-black tracking-tight text-[#FFFDF9]">
+              <h4 className="text-lg font-black tracking-tight text-[#FFFDF9] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                 {previewTitle}
               </h4>
 
-              <p className="text-xs text-[#D1E7DD] leading-relaxed line-clamp-2">
-                Welcome, <strong className="text-[#FFFDF9]">{userDisplayName}</strong> ({userRole}). {formData.description}
+              <p className="text-xs text-[#E2F0EA] leading-relaxed line-clamp-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                Welcome, <strong className="text-[#FFFDF9] font-bold">{userDisplayName}</strong> ({userRole}). {formData.description}
               </p>
 
               {formData.showAnnouncement && formData.announcementText && (
@@ -270,6 +303,56 @@ export const BannerEditorModal: React.FC<BannerEditorModalProps> = ({
                   <span className="font-semibold text-[#FFFDF9] block text-[11px]">{t.name}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Picture Holder / Banner Photo */}
+          <div className="p-3.5 bg-[#061810] rounded-xl border border-[#D4AF37]/30 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[#E2F0EA] font-semibold flex items-center space-x-1.5">
+                <Image className="w-3.5 h-3.5 text-[#F0D283]" />
+                <span>Banner Picture Holder / School Photo</span>
+              </label>
+              {formData.bannerImageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, bannerImageUrl: '' }))}
+                  className="text-rose-400 hover:text-rose-300 flex items-center space-x-1 text-[11px]"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Remove Picture</span>
+                </button>
+              )}
+            </div>
+
+            <p className="text-[11px] text-[#8FBCA7]">
+              Upload a campus photo or background image to display inside the dashboard banner.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-2 bg-[#0E3322] hover:bg-[#13442D] border border-[#D4AF37]/40 rounded-xl text-[#F0D283] font-semibold flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Choose Picture File</span>
+              </button>
+
+              <input
+                type="text"
+                value={formData.bannerImageUrl || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, bannerImageUrl: e.target.value }))}
+                placeholder="Or paste image URL (https://...)"
+                className="flex-1 p-2 bg-[#04120B] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] placeholder-[#8FBCA7]/50 focus:outline-none focus:border-[#D4AF37]"
+              />
             </div>
           </div>
 

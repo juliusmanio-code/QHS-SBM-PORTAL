@@ -78,25 +78,38 @@ export function generateRequiredMovItems(schoolYearId: string): RequiredMovItem[
   return items;
 }
 
+// Helper function to safely encode UTF-8 strings into base64 without throwing Latin1 range errors
+function safeBase64Encode(str: string): string {
+  try {
+    return btoa(
+      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+        String.fromCharCode(parseInt(p1, 16))
+      )
+    );
+  } catch {
+    return btoa(str.replace(/[^\x00-\x7F]/g, ' '));
+  }
+}
+
 export function generateSampleMovRecords(schoolYearId: string): MovRecord[] {
   // Sample valid PDF base64
   const samplePdfBase64 =
     'data:application/pdf;base64,' +
-    btoa(
+    safeBase64Encode(
       `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length 235 >> stream\nBT\n/F1 18 Tf\n50 720 Td\n(REPUBLIC OF THE PHILIPPINES) Tj\n0 -25 Td\n/F1 14 Tf\n(DEPARTMENT OF EDUCATION - DIVISION OF QUEZON CITY) Tj\n0 -25 Td\n/F1 12 Tf\n(QUIRINO HIGH SCHOOL - SCHOOL-BASED MANAGEMENT PORTAL) Tj\n0 -30 Td\n(Means of Verification: School Improvement Plan 2024-2027 Resolution) Tj\n0 -20 Td\n(Status: Certified Authentic & Approved for Dimension 1) Tj\nET\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\nxref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000244 00000 n \n0000000532 00000 n \ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n601\n%%EOF`
     );
 
   // Sample SVG Image base64
   const sampleSvgImageBase64 =
     'data:image/svg+xml;base64,' +
-    btoa(
+    safeBase64Encode(
       `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
         <rect width="800" height="500" fill="#0D2E1F" rx="16"/>
         <circle cx="400" cy="180" r="80" fill="#123E2A" stroke="#D4AF37" stroke-width="4"/>
         <path d="M400 130 L440 210 L360 210 Z" fill="#D4AF37"/>
-        <text x="400" y="310" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#FFFDF9" text-anchor="middle">QUIRINO HIGH SCHOOL — SBM EVIDENCE</text>
+        <text x="400" y="310" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#FFFDF9" text-anchor="middle">QUIRINO HIGH SCHOOL - SBM EVIDENCE</text>
         <text x="400" y="345" font-family="Arial, sans-serif" font-size="16" fill="#F0D283" text-anchor="middle">School Learning Action Cell (SLAC) Faculty Training Session</text>
-        <text x="400" y="380" font-family="Arial, sans-serif" font-size="13" fill="#8FBCA7" text-anchor="middle">DepEd SDO Quezon City • Certified Means of Verification (Photo Documentation)</text>
+        <text x="400" y="380" font-family="Arial, sans-serif" font-size="13" fill="#8FBCA7" text-anchor="middle">DepEd SDO Quezon City | Certified Means of Verification (Photo Documentation)</text>
         <rect x="250" y="415" width="300" height="35" rx="8" fill="#D4AF37" opacity="0.9"/>
         <text x="400" y="438" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#061810" text-anchor="middle">OFFICIALLY VERIFIED &amp; COMPLIANT</text>
       </svg>`
@@ -105,7 +118,7 @@ export function generateSampleMovRecords(schoolYearId: string): MovRecord[] {
   // Sample CSV base64
   const sampleCsvBase64 =
     'data:text/csv;base64,' +
-    btoa(
+    safeBase64Encode(
       `School Year,Enrollment Total,Promotion Rate,Drop-out Incidence,SBM Rating Level\n2021-2022,3280,97.5%,0.8%,Level 2 (Maturing)\n2022-2023,3420,98.2%,0.6%,Level 2 (Maturing)\n2023-2024,3510,98.8%,0.4%,Level 3 (Advanced Candidate)\n2024-2025,3580,99.2%,0.2%,Level 3 (Advanced Candidate)`
     );
 

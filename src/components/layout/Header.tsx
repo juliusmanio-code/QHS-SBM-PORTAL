@@ -2,19 +2,13 @@ import React, { useState } from 'react';
 import {
   Search,
   Bell,
-  User,
-  LogOut,
-  LogIn,
   Calendar,
-  Shield,
   ChevronDown,
   Layers,
   Sparkles,
   Menu
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { useSbmData } from '../../contexts/SbmDataContext';
-import { UserRole } from '../../types';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -29,14 +23,6 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSidebar
 }) => {
   const {
-    userProfile,
-    role,
-    isPublicVisitor,
-    switchDemoRole,
-    logoutUser
-  } = useAuth();
-
-  const {
     schoolYears,
     currentSchoolYear,
     selectSchoolYear,
@@ -45,21 +31,9 @@ export const Header: React.FC<HeaderProps> = ({
     schoolProfile
   } = useSbmData();
 
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const unreadNotifs = notifications.filter((n) => !n.isRead);
-
-  const rolesList: { role: UserRole; label: string; desc: string }[] = [
-    { role: 'super_admin', label: 'System Administrator', desc: 'Full System Control, Settings & Audit Logs' },
-    { role: 'school_head', label: 'School Head (Principal)', desc: 'Final Approval & School Oversight' },
-    { role: 'sbm_coordinator', label: 'SBM Coordinator', desc: 'Annual Workspace & Indicator Assignments' },
-    { role: 'dimension_leader', label: 'Dimension Leader', desc: 'Dimension Oversight & Review Queue' },
-    { role: 'contributor', label: 'Indicator Contributor', desc: 'MOV Upload, Revisions & Submissions' },
-    { role: 'validator', label: 'SDO QC Validator', desc: 'Read-Only External SBM Validation' },
-    { role: 'public_visitor', label: 'Public Visitor', desc: 'Public School Profile & Published SRC' }
-  ];
 
   return (
     <header

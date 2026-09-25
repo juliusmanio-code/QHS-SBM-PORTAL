@@ -763,7 +763,7 @@ export const ReportsCenterView: React.FC = () => {
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-500">
-                        User: {log.userName} ({log.userEmail}) • Role: {log.userRole}
+                        User: {log.actorName} ({log.actorEmail}) • Role: {log.actorRole}
                       </div>
                     </div>
                   );

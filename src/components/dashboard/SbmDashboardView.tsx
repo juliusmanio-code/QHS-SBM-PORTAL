@@ -19,7 +19,8 @@ import {
   Compass,
   Columns,
   BarChart2,
-  Eye
+  Eye,
+  Trash2
 } from 'lucide-react';
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -51,10 +52,40 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
   onOpenUpload,
   onPreviewMov
 }) => {
-  const { currentSchoolYear, progressStats, movRecords, reviews, requiredMovItems, schoolProfile, updateSchoolProfile } = useSbmData();
+  const {
+    currentSchoolYear,
+    progressStats,
+    movRecords,
+    reviews,
+    requiredMovItems,
+    schoolProfile,
+    updateSchoolProfile,
+    deleteMov
+  } = useSbmData();
   const { userProfile, role } = useAuth();
   const [isEditingBanner, setIsEditingBanner] = useState(false);
   const [dimensionDisplayMode, setDimensionDisplayMode] = useState<'split' | 'radar' | 'bars'>('split');
+  const [movToDelete, setMovToDelete] = useState<MovRecord | null>(null);
+  const [isDeletingMov, setIsDeletingMov] = useState(false);
+  const [deleteNotification, setDeleteNotification] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!movToDelete) return;
+    setIsDeletingMov(true);
+    try {
+      const removedTitle = movToDelete.title;
+      await deleteMov(movToDelete.id);
+      setDeleteNotification(`Successfully deleted "${removedTitle}".`);
+      setMovToDelete(null);
+      setTimeout(() => {
+        setDeleteNotification(null);
+      }, 3500);
+    } catch (err: any) {
+      console.error('Delete error:', err);
+    } finally {
+      setIsDeletingMov(false);
+    }
+  };
 
   // Check if role is authorized to edit dashboard banner
   const canEditBanner = role === 'super_admin' || role === 'school_head' || role === 'sbm_coordinator';
@@ -115,10 +146,25 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
     'Not Yet Manifested'
   ];
 
+  const bannerImageSrc =
+    bannerConfig.bannerImageUrl || schoolProfile?.bannerUrl || schoolProfile?.schoolBanner;
+
   return (
     <div id="sbm-dashboard-view" className="space-y-6">
-      {/* Top Banner / Welcome Action */}
-      <div className={`rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border relative overflow-hidden transition-all ${getThemeClasses(bannerConfig.theme)}`}>
+      {/* Top Banner / Welcome Action - Picture Holder & Dashboard Cover */}
+      <div className={`rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border relative overflow-hidden transition-all min-h-[160px] flex flex-col justify-center ${getThemeClasses(bannerConfig.theme)}`}>
+        {bannerImageSrc && (
+          <>
+            <img
+              src={bannerImageSrc}
+              alt="Dashboard Banner Cover"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Transparent overlay that clearly reveals the banner photo with high visual clarity */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#041A10]/60 via-[#072418]/40 to-[#03150D]/25" />
+            <div className="absolute inset-0 bg-black/10 backdrop-brightness-[0.98]" />
+          </>
+        )}
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#D4AF37]/5 transform skew-x-12 pointer-events-none" />
         
         {/* Edit Banner Button (for Super Admin, School Head, SBM Coordinator) */}
@@ -127,7 +173,7 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
             id="edit-dashboard-banner-btn"
             type="button"
             onClick={() => setIsEditingBanner(true)}
-            className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-xl bg-[#061810]/80 hover:bg-[#0E3322] border border-[#D4AF37]/40 text-[#F0D283] hover:text-[#FFFDF9] text-xs font-semibold flex items-center space-x-1.5 backdrop-blur-xs transition-all shadow-md hover:scale-105"
+            className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-xl bg-[#061810]/80 hover:bg-[#0E3322] border border-[#D4AF37]/40 text-[#F0D283] hover:text-[#FFFDF9] text-xs font-semibold flex items-center space-x-1.5 backdrop-blur-xs transition-all shadow-md hover:scale-105 cursor-pointer"
             title="Customize Dashboard Banner"
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -137,17 +183,17 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
 
         <div className="relative z-10 max-w-3xl space-y-3">
           {bannerConfig.badgeText && (
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F0D283] text-xs font-semibold">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F0D283] text-xs font-semibold backdrop-blur-xs shadow-xs">
               <span>{bannerConfig.badgeText}</span>
             </div>
           )}
 
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFFDF9]">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFFDF9] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
             {bannerTitle}
           </h2>
 
-          <p className="text-sm text-[#D1E7DD] leading-relaxed">
-            Welcome, <strong className="text-[#FFFDF9]">{userProfile?.displayName}</strong> ({role === 'super_admin' ? 'System Administrator' : role.replace('_', ' ')}). {bannerConfig.description || 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.'}
+          <p className="text-sm text-[#E2F0EA] leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+            Welcome, <strong className="text-[#FFFDF9] font-bold">{userProfile?.displayName}</strong> ({role === 'super_admin' ? 'System Administrator' : role.replace('_', ' ')}). {bannerConfig.description || 'Monitor all 6 SBM dimensions, verify Means of Verification (MOVs), and calibrate official degrees of manifestation.'}
           </p>
 
           {/* Optional Broadcast Announcement */}
@@ -561,6 +607,18 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
                         <Eye className="w-3.5 h-3.5" />
                       </button>
                     )}
+                    <button
+                      type="button"
+                      id={`dashboard-delete-mov-${mov.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMovToDelete(mov);
+                      }}
+                      className="p-1 rounded-lg bg-[#061810] text-rose-400 hover:text-rose-200 hover:bg-rose-950/60 border border-rose-500/30 transition-colors"
+                      title="Delete MOV evidence file"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                     <StatusBadge status={mov.submissionStatus} size="sm" />
                     <ConfidentialityBadge level={mov.confidentialityLevel} size="sm" />
                   </div>
@@ -621,6 +679,73 @@ export const SbmDashboardView: React.FC<SbmDashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Delete MOV Confirmation Modal */}
+      {movToDelete && (
+        <div
+          id="delete-mov-confirmation-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+        >
+          <div className="bg-[#0B2519] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-[#FFFDF9] animate-in fade-in duration-150">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-rose-400 flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#FFFDF9]">Delete MOV Submission</h3>
+                <p className="text-xs text-[#8FBCA7]">Confirm removing this evidence document</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#061810] rounded-xl border border-[#D4AF37]/20 space-y-1.5 text-xs">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-[#F0D283] flex-shrink-0" />
+                <span className="font-bold text-[#FFFDF9] truncate">{movToDelete.title}</span>
+              </div>
+              <p className="text-[11px] text-[#8FBCA7]">
+                Indicator {movToDelete.indicatorNumber} (Dimension {movToDelete.dimensionId})
+              </p>
+              <p className="text-[11px] text-[#8FBCA7] truncate">
+                File: {movToDelete.originalFilename} • Uploader: {movToDelete.uploaderName}
+              </p>
+            </div>
+
+            <p className="text-xs text-rose-300 bg-rose-950/40 p-2.5 rounded-lg border border-rose-500/30">
+              Warning: Deleting this file will permanently remove it from the SBM repository and update the compliance checklist.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#D4AF37]/20">
+              <button
+                type="button"
+                id="cancel-delete-mov-btn"
+                onClick={() => setMovToDelete(null)}
+                disabled={isDeletingMov}
+                className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] hover:bg-[#0E3322] rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                id="confirm-delete-mov-btn"
+                onClick={handleConfirmDelete}
+                disabled={isDeletingMov}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeletingMov ? 'Deleting...' : 'Yes, Delete MOV'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Notification Toast */}
+      {deleteNotification && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0E3824] border border-[#D4AF37]/60 text-[#FFFDF9] px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs animate-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span>{deleteNotification}</span>
+        </div>
+      )}
     </div>
   );
 };

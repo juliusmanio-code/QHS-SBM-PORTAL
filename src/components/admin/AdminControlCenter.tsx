@@ -91,6 +91,9 @@ export const AdminControlCenter: React.FC = () => {
 
   // Modal for Add New Personnel
   const [showAddModal, setShowAddModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+  const [showResetDefaultsModal, setShowResetDefaultsModal] = useState(false);
   const [newUserData, setNewUserData] = useState<{
     displayName: string;
     email: string;
@@ -268,14 +271,18 @@ export const AdminControlCenter: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async (user: UserProfile) => {
-    if (confirm(`Are you sure you want to remove personnel record "${user.displayName}"?`)) {
-      try {
-        await deleteUserAccount(user.id);
-        showNotification(`Removed personnel account "${user.displayName}"`);
-      } catch (err: any) {
-        showNotification('Failed to delete user: ' + err.message, 'error');
-      }
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setIsDeletingUser(true);
+    try {
+      const deletedName = userToDelete.displayName;
+      await deleteUserAccount(userToDelete.id);
+      showNotification(`Successfully removed personnel account "${deletedName}"`);
+      setUserToDelete(null);
+    } catch (err: any) {
+      showNotification('Failed to delete user: ' + err.message, 'error');
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
@@ -321,10 +328,7 @@ export const AdminControlCenter: React.FC = () => {
   };
 
   const handleResetDefaults = () => {
-    if (confirm('Reset personnel list to official default QHS school roster?')) {
-      resetUsersToDefault();
-      showNotification('Personnel list reset to official default roster.');
-    }
+    setShowResetDefaultsModal(true);
   };
 
   const handleSaveSchoolSettings = async (e: React.FormEvent) => {
@@ -843,15 +847,16 @@ export const AdminControlCenter: React.FC = () => {
                               type="button"
                               onClick={() => startEditing(u)}
                               title="Edit all fields of this personnel"
-                              className="p-1.5 text-[#F0D283] hover:text-[#FFFDF9] hover:bg-[#061810] rounded-lg transition-colors"
+                              className="p-1.5 text-[#F0D283] hover:text-[#FFFDF9] hover:bg-[#061810] rounded-lg transition-colors cursor-pointer"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDeleteUser(u)}
+                              id={`delete-user-${u.id}`}
+                              onClick={() => setUserToDelete(u)}
                               title="Remove personnel"
-                              className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-[#2A080C] rounded-lg transition-colors"
+                              className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-[#2A080C] rounded-lg transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1855,6 +1860,112 @@ export const AdminControlCenter: React.FC = () => {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Personnel Confirmation Modal */}
+      {userToDelete && (
+        <div
+          id="delete-user-confirmation-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+        >
+          <div className="bg-[#0B2519] border border-rose-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-[#FFFDF9] animate-in fade-in duration-150">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-rose-400 flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#FFFDF9]">Remove Personnel Record</h3>
+                <p className="text-xs text-[#8FBCA7]">Confirm deleting this account from SBM Portal</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#061810] rounded-xl border border-[#D4AF37]/20 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[#FFFDF9] text-sm">{userToDelete.displayName}</span>
+                <span className="px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#F0D283] text-[10px] font-bold">
+                  {getRoleDisplay(userToDelete.role)}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#F0D283] font-medium">{userToDelete.designation || 'Teacher / Personnel'}</p>
+              <p className="text-[11px] text-[#8FBCA7]">{userToDelete.email}</p>
+              {userToDelete.department && (
+                <p className="text-[10px] text-[#A7D7C1]">Department: {userToDelete.department}</p>
+              )}
+            </div>
+
+            <p className="text-xs text-rose-300 bg-rose-950/40 p-2.5 rounded-lg border border-rose-500/30">
+              Are you sure you want to remove this personnel account? They will lose access to their assigned indicators and permissions.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#D4AF37]/20">
+              <button
+                type="button"
+                id="cancel-delete-user-btn"
+                onClick={() => setUserToDelete(null)}
+                disabled={isDeletingUser}
+                className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] hover:bg-[#0E3322] rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                id="confirm-delete-user-btn"
+                onClick={confirmDeleteUser}
+                disabled={isDeletingUser}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeletingUser ? 'Removing...' : 'Yes, Delete Record'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Personnel Roster Confirmation Modal */}
+      {showResetDefaultsModal && (
+        <div
+          id="reset-roster-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+        >
+          <div className="bg-[#0B2519] border border-amber-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-[#FFFDF9] animate-in fade-in duration-150">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-amber-500/50 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#FFFDF9]">Reset Personnel Roster</h3>
+                <p className="text-xs text-[#8FBCA7]">Restore official default QHS school roster</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#E2F0EA]">
+              This will restore all default accounts (Super Admin, School Head, SBM Coordinator, Dimension Leaders, and Validators) back to default values.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#D4AF37]/20">
+              <button
+                type="button"
+                onClick={() => setShowResetDefaultsModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] hover:bg-[#0E3322] rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetUsersToDefault();
+                  setShowResetDefaultsModal(false);
+                  showNotification('Personnel list reset to official default roster.');
+                }}
+                className="px-4 py-2 gold-btn text-xs font-bold rounded-xl shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Confirm Reset</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

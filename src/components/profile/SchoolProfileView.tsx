@@ -40,6 +40,12 @@ export const SchoolProfileView: React.FC = () => {
   const [isEditingLogo, setIsEditingLogo] = useState(false);
   const [logoInputUrl, setLogoInputUrl] = useState(schoolProfile?.logoUrl || schoolProfile?.schoolLogo || '');
   const [logoPreview, setLogoPreview] = useState(schoolProfile?.logoUrl || schoolProfile?.schoolLogo || '');
+
+  // Banner Editing Modal State
+  const [isEditingBanner, setIsEditingBanner] = useState(false);
+  const [bannerInputUrl, setBannerInputUrl] = useState(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+  const [bannerPreview, setBannerPreview] = useState(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
   
   // Full Profile & Settings Modal State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -217,6 +223,40 @@ export const SchoolProfileView: React.FC = () => {
     }
   };
 
+  const handleBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setBannerPreview(result);
+        setBannerInputUrl(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveBanner = async () => {
+    setIsSaving(true);
+    try {
+      await updateSchoolProfile({
+        bannerUrl: bannerPreview,
+        schoolBanner: bannerPreview
+      });
+      setSaveMessage('School Banner Photo successfully updated!');
+      setTimeout(() => {
+        setSaveMessage('');
+        setIsEditingBanner(false);
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleOpenEditProfile = (initialTab: 'general' | 'signatories' | 'coordinators' | 'facilities' = 'general') => {
     setActiveModalTab(initialTab);
     setProfileForm({
@@ -262,13 +302,11 @@ export const SchoolProfileView: React.FC = () => {
       divisionValidator: 'Division SBM Validator',
       divisionSuperintendent: 'Schools Division Superintendent'
     };
-    if (window.confirm(`Remove ${roleLabels[roleKey]} from the official signatories list?`)) {
-      setProfileForm((prev) => ({
-        ...prev,
-        [roleKey]: '',
-        [`${roleKey}Title`]: ''
-      }));
-    }
+    setProfileForm((prev) => ({
+      ...prev,
+      [roleKey]: '',
+      [`${roleKey}Title`]: ''
+    }));
   };
 
   // Restore/Re-add an official executive signatory in the modal form
@@ -287,42 +325,29 @@ export const SchoolProfileView: React.FC = () => {
 
   // Direct delete from the main page roster card
   const handleDirectDeleteSignatory = async (roleKey: 'assistantPrincipal' | 'divisionValidator' | 'divisionSuperintendent') => {
-    const roleLabels = {
-      assistantPrincipal: 'Assistant Principal',
-      divisionValidator: 'Division SBM Validator',
-      divisionSuperintendent: 'Schools Division Superintendent'
-    };
-    if (window.confirm(`Remove ${roleLabels[roleKey]} from official signatories and reporting documents?`)) {
-      await updateSchoolProfile({
-        [roleKey]: '',
-        [`${roleKey}Title`]: ''
-      });
-    }
+    await updateSchoolProfile({
+      [roleKey]: '',
+      [`${roleKey}Title`]: ''
+    });
   };
 
   // Delete a dimension coordinator in the modal
   const handleDeleteCoordinator = (index: number) => {
-    const coord = profileForm.dimensionCoordinators[index];
-    const name = coord?.leadName || `Dimension ${coord?.dimensionId} Coordinator`;
-    if (window.confirm(`Remove ${name} from Dimension Coordinators?`)) {
-      const updated = profileForm.dimensionCoordinators.filter((_, i) => i !== index);
-      setProfileForm((prev) => ({
-        ...prev,
-        dimensionCoordinators: updated
-      }));
-    }
+    const updated = profileForm.dimensionCoordinators.filter((_, i) => i !== index);
+    setProfileForm((prev) => ({
+      ...prev,
+      dimensionCoordinators: updated
+    }));
   };
 
   // Direct delete a dimension coordinator from the main page roster card
-  const handleDirectDeleteCoordinator = async (dimensionId: number, name: string) => {
-    if (window.confirm(`Remove ${name} as coordinator for Dimension ${dimensionId}?`)) {
-      const updated = (schoolProfile?.dimensionCoordinators || defaultDimensionCoordinators).filter(
-        (c) => c.dimensionId !== dimensionId
-      );
-      await updateSchoolProfile({
-        dimensionCoordinators: updated
-      });
-    }
+  const handleDirectDeleteCoordinator = async (dimensionId: number, _name?: string) => {
+    const updated = (schoolProfile?.dimensionCoordinators || defaultDimensionCoordinators).filter(
+      (c) => c.dimensionId !== dimensionId
+    );
+    await updateSchoolProfile({
+      dimensionCoordinators: updated
+    });
   };
 
   // Add a new dimension coordinator in the modal
@@ -370,13 +395,11 @@ export const SchoolProfileView: React.FC = () => {
     }));
   };
 
-  const handleDirectDeleteCustomSignatory = async (id: string, name: string) => {
-    if (window.confirm(`Remove signatory "${name || 'entry'}" from official signatories list?`)) {
-      const updated = (schoolProfile?.customSignatories || []).filter((s) => s.id !== id);
-      await updateSchoolProfile({
-        customSignatories: updated
-      });
-    }
+  const handleDirectDeleteCustomSignatory = async (id: string, _name?: string) => {
+    const updated = (schoolProfile?.customSignatories || []).filter((s) => s.id !== id);
+    await updateSchoolProfile({
+      customSignatories: updated
+    });
   };
 
   const handleUpdateCoordinator = (index: number, field: string, value: string) => {
@@ -443,22 +466,56 @@ export const SchoolProfileView: React.FC = () => {
 
   return (
     <div id="school-profile-view" className="space-y-6">
-      {/* Header Banner with Soothing Dark Forest Green & Heritage Gold */}
-      <div className="bg-gradient-to-r from-[#0A291A] via-[#0E3824] to-[#081F14] rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border border-[#D4AF37]/35 relative overflow-hidden">
+      {/* Header Banner with Soothing Dark Forest Green & Heritage Gold - Full Picture Holder */}
+      <div className="relative rounded-2xl p-6 sm:p-8 text-[#FFFDF9] shadow-xl border border-[#D4AF37]/35 overflow-hidden min-h-[190px] flex flex-col justify-center">
+        {/* Banner Background Image (Picture Holder) */}
+        {schoolProfile?.bannerUrl || schoolProfile?.schoolBanner ? (
+          <>
+            <img
+              src={schoolProfile.bannerUrl || schoolProfile.schoolBanner}
+              alt="School Banner Cover"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Transparent soothing overlay: reveals the banner image while protecting text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#041A10]/60 via-[#072418]/40 to-[#03150D]/25" />
+            <div className="absolute inset-0 bg-black/10 backdrop-brightness-[0.98]" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A291A] via-[#0E3824] to-[#081F14]" />
+        )}
+
+        {/* Change Banner Photo Button */}
+        {canEdit && (
+          <button
+            id="edit-school-banner-btn"
+            type="button"
+            onClick={() => {
+              setBannerPreview(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+              setBannerInputUrl(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+              setIsEditingBanner(true);
+            }}
+            className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-xl bg-[#061810]/85 hover:bg-[#0E3322] border border-[#D4AF37]/45 text-[#F0D283] hover:text-[#FFFDF9] text-xs font-semibold flex items-center space-x-1.5 backdrop-blur-xs transition-all shadow-md hover:scale-105"
+            title="Upload / Change School Banner Photo"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Change Banner Photo</span>
+          </button>
+        )}
+
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-            {/* School Logo Section */}
-            <div className="relative group">
+            {/* School Logo Section (Circular Picture Holder) */}
+            <div className="relative group flex-shrink-0">
               {schoolProfile?.logoUrl || schoolProfile?.schoolLogo ? (
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#061810] border-2 border-[#D4AF37] p-1.5 shadow-2xl flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#061810] border-4 border-[#D4AF37] p-1 shadow-2xl flex items-center justify-center overflow-hidden">
                   <img
                     src={schoolProfile.logoUrl || schoolProfile.schoolLogo}
                     alt="Official School Logo"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </div>
               ) : (
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#061810] border-2 border-[#D4AF37] p-2 shadow-2xl flex flex-col items-center justify-center text-[#F0D283]">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#061810] border-4 border-[#D4AF37] p-2 shadow-2xl flex flex-col items-center justify-center text-[#F0D283]">
                   <School className="w-10 h-10 mb-1 text-[#D4AF37]" />
                   <span className="font-black text-xs">QHS LOGO</span>
                 </div>
@@ -473,7 +530,7 @@ export const SchoolProfileView: React.FC = () => {
                     setLogoInputUrl(schoolProfile?.logoUrl || schoolProfile?.schoolLogo || '');
                     setIsEditingLogo(true);
                   }}
-                  className="absolute -bottom-2 -right-2 p-2 bg-[#D4AF37] hover:bg-[#F0D283] text-[#061810] rounded-xl shadow-lg transition-transform hover:scale-105"
+                  className="absolute bottom-0 right-0 p-2 bg-[#D4AF37] hover:bg-[#F0D283] text-[#061810] rounded-full shadow-lg border-2 border-[#061810] transition-transform hover:scale-110"
                   title="Upload / Change School Logo"
                 >
                   <Camera className="w-4 h-4" />
@@ -496,7 +553,7 @@ export const SchoolProfileView: React.FC = () => {
                 {canEdit && (
                   <button
                     id="open-profile-settings-btn"
-                    onClick={handleOpenEditProfile}
+                    onClick={() => handleOpenEditProfile('general')}
                     className="gold-btn inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-md transition-transform"
                   >
                     <Edit className="w-3.5 h-3.5" />
@@ -515,6 +572,20 @@ export const SchoolProfileView: React.FC = () => {
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>{schoolProfile?.logoUrl ? 'Update School Logo' : 'Upload School Logo'}</span>
+                  </button>
+                )}
+                {canEdit && (
+                  <button
+                    id="open-banner-modal-link-btn"
+                    onClick={() => {
+                      setBannerPreview(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+                      setBannerInputUrl(schoolProfile?.bannerUrl || schoolProfile?.schoolBanner || '');
+                      setIsEditingBanner(true);
+                    }}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#061810]/70 hover:bg-[#0E3322] border border-[#D4AF37]/35 text-xs text-[#F0D283] font-semibold transition-colors"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>{schoolProfile?.bannerUrl ? 'Update Banner Photo' : 'Upload Banner Photo'}</span>
                   </button>
                 )}
               </div>
@@ -1640,15 +1711,15 @@ export const SchoolProfileView: React.FC = () => {
             {/* Logo Preview */}
             <div className="flex flex-col items-center justify-center p-4 bg-[#061810] rounded-xl border border-[#D4AF37]/20">
               {logoPreview ? (
-                <div className="w-32 h-32 rounded-2xl bg-white/10 border-2 border-[#D4AF37] p-2 flex items-center justify-center overflow-hidden shadow-inner">
+                <div className="w-32 h-32 rounded-full bg-white/10 border-4 border-[#D4AF37] p-1 flex items-center justify-center overflow-hidden shadow-inner">
                   <img
                     src={logoPreview}
                     alt="Logo Preview"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-2xl bg-[#061810] border-2 border-dashed border-[#D4AF37]/40 flex flex-col items-center justify-center text-[#8FBCA7]">
+                <div className="w-32 h-32 rounded-full bg-[#061810] border-4 border-dashed border-[#D4AF37]/40 flex flex-col items-center justify-center text-[#8FBCA7]">
                   <School className="w-10 h-10 text-[#D4AF37]/60 mb-1" />
                   <span className="text-xs">No logo chosen</span>
                 </div>
@@ -1735,6 +1806,141 @@ export const SchoolProfileView: React.FC = () => {
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSaving ? 'Saving...' : 'Apply Logo'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* School Banner Picture Upload / Management Modal */}
+      {isEditingBanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+          <div className="bg-[#0B2519] border border-[#D4AF37]/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-[#FFFDF9]">
+            <div className="flex items-center justify-between border-b border-[#D4AF37]/20 pb-3">
+              <div className="flex items-center space-x-2">
+                <Camera className="w-5 h-5 text-[#F0D283]" />
+                <h3 className="text-base font-bold text-[#FFFDF9]">Customize School Banner Photo</h3>
+              </div>
+              <button
+                id="close-banner-modal-btn"
+                type="button"
+                onClick={() => setIsEditingBanner(false)}
+                className="p-1 rounded-lg text-[#8FBCA7] hover:text-[#FFFDF9] hover:bg-[#0E3322]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Banner Preview (Picture Holder) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#F0D283]">
+                Banner Picture Preview
+              </label>
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border-2 border-[#D4AF37]/40 bg-[#061810] flex items-center justify-center shadow-inner">
+                {bannerPreview ? (
+                  <>
+                    <img
+                      src={bannerPreview}
+                      alt="Banner Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#041A10]/80 via-[#08291A]/60 to-[#03150D]/80" />
+                    <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
+                      <span className="text-xs font-bold text-white drop-shadow-md">
+                        {schoolName} Banner Cover
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-[#8FBCA7] space-y-1">
+                    <Camera className="w-8 h-8 text-[#D4AF37]/60" />
+                    <span className="text-xs font-medium">No banner photo uploaded (Default green theme active)</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* File Upload Option */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-[#F0D283]">
+                Option 1: Upload Banner File (Landscape / Panoramic photo)
+              </label>
+              <input
+                ref={bannerFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerFileUpload}
+                className="hidden"
+              />
+              <button
+                id="select-banner-file-btn"
+                type="button"
+                onClick={() => bannerFileInputRef.current?.click()}
+                className="w-full py-2.5 px-4 bg-[#0E3322] hover:bg-[#15462E] border border-[#D4AF37]/40 rounded-xl text-xs font-bold text-[#F0D283] flex items-center justify-center space-x-2 transition-colors shadow-md cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Choose School Photo from Computer</span>
+              </button>
+            </div>
+
+            {/* URL Input Option */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-[#F0D283]">
+                Option 2: Or Paste Photo URL
+              </label>
+              <input
+                id="banner-url-input"
+                type="text"
+                value={bannerInputUrl}
+                onChange={(e) => {
+                  setBannerInputUrl(e.target.value);
+                  setBannerPreview(e.target.value);
+                }}
+                placeholder="https://example.com/school-campus-banner.jpg"
+                className="w-full p-2.5 text-xs bg-[#061810] border border-[#D4AF37]/30 rounded-xl text-[#FFFDF9] focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+
+            {saveMessage && (
+              <div className="p-2.5 bg-emerald-950/80 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-semibold text-center flex items-center justify-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>{saveMessage}</span>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-2 border-t border-[#D4AF37]/20">
+              {bannerPreview ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBannerPreview('');
+                    setBannerInputUrl('');
+                  }}
+                  className="text-xs text-rose-400 hover:underline font-semibold"
+                >
+                  Remove Photo
+                </button>
+              ) : <div />}
+              <div className="flex items-center space-x-2 ml-auto">
+                <button
+                  id="cancel-banner-modal-btn"
+                  type="button"
+                  onClick={() => setIsEditingBanner(false)}
+                  className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] hover:bg-[#0E3322] rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="save-school-banner-btn"
+                  type="button"
+                  onClick={handleSaveBanner}
+                  disabled={isSaving}
+                  className="gold-btn px-5 py-2 rounded-xl text-xs font-bold shadow-md flex items-center space-x-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSaving ? 'Saving...' : 'Apply Banner'}</span>
                 </button>
               </div>
             </div>

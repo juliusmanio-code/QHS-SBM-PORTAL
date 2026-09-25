@@ -30,11 +30,13 @@ import {
   Table,
   FileCode,
   Layers,
-  Award
+  Award,
+  Trash2
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { ConfidentialityBadge } from './ConfidentialityBadge';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSbmData } from '../../contexts/SbmDataContext';
 import { recordAuditEvent } from '../../lib/audit';
 import { PdfViewer } from './PdfViewer';
 
@@ -54,11 +56,14 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   onReplace
 }) => {
   const { userProfile, canAccessConfidential } = useAuth();
+  const { deleteMov } = useSbmData();
   const [activeTab, setActiveTab] = useState<PreviewTab>('document');
   const [isMaximized, setIsMaximized] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Image controls state
   const [imageZoom, setImageZoom] = useState(1);
@@ -209,10 +214,10 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   };
 
   const handleOpenInNewTab = () => {
-    if (blobUrl) {
-      window.open(blobUrl, '_blank', 'noopener,noreferrer');
-    } else if (mov.fileData) {
-      try {
+    try {
+      if (blobUrl) {
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      } else if (mov.fileData) {
         let base64 = mov.fileData;
         let mimeType = mov.mimeType || 'application/pdf';
         if (mov.fileData.startsWith('data:')) {
@@ -228,9 +233,9 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
         const blob = new Blob([bytes], { type: mimeType });
         const tempUrl = URL.createObjectURL(blob);
         window.open(tempUrl, '_blank', 'noopener,noreferrer');
-      } catch {
-        window.open(mov.fileData, '_blank');
       }
+    } catch (e) {
+      console.warn('Window open was prevented by browser/iframe environment:', e);
     }
   };
 
@@ -820,10 +825,23 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                   onClose();
                   onReplace(mov);
                 }}
-                className="px-3.5 py-2 text-xs font-semibold text-[#F0D283] bg-[#0E3824] border border-[#D4AF37]/40 rounded-xl hover:bg-[#123E2A] transition-colors shadow-xs flex items-center space-x-1.5"
+                className="px-3.5 py-2 text-xs font-semibold text-[#F0D283] bg-[#0E3824] border border-[#D4AF37]/40 rounded-xl hover:bg-[#123E2A] transition-colors shadow-xs flex items-center space-x-1.5 cursor-pointer"
               >
                 <History className="w-3.5 h-3.5" />
                 <span>Upload New Version</span>
+              </button>
+            )}
+
+            {!mov.isLocked && hasAccess && (
+              <button
+                id="preview-delete-btn"
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="px-3.5 py-2 text-xs font-semibold text-rose-300 bg-rose-950/40 border border-rose-500/30 rounded-xl hover:bg-rose-900/60 transition-colors shadow-xs flex items-center space-x-1.5 cursor-pointer"
+                title="Delete this MOV"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete MOV</span>
               </button>
             )}
           </div>
@@ -833,7 +851,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               id="preview-close-btn"
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] bg-[#0D2E1F] border border-[#D4AF37]/30 rounded-xl hover:text-white hover:bg-[#123E2A] transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-[#8FBCA7] bg-[#0D2E1F] border border-[#D4AF37]/30 rounded-xl hover:text-white hover:bg-[#123E2A] transition-colors cursor-pointer"
             >
               Close
             </button>
@@ -844,7 +862,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               disabled={!hasAccess}
               className={`px-4 py-2 text-xs font-bold rounded-xl shadow-md flex items-center space-x-1.5 transition-all ${
                 hasAccess
-                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89628] text-slate-950 hover:brightness-110 active:scale-95'
+                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89628] text-slate-950 hover:brightness-110 active:scale-95 cursor-pointer'
                   : 'bg-[#123E2A] text-slate-500 cursor-not-allowed border border-[#D4AF37]/20'
               }`}
             >
@@ -853,6 +871,58 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Delete Confirmation Overlay */}
+        {confirmDelete && (
+          <div className="absolute inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150">
+            <div className="bg-[#0B2519] border border-rose-500/50 rounded-2xl max-w-sm w-full p-5 space-y-3.5 text-[#FFFDF9] shadow-2xl">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-rose-400 flex-shrink-0">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold">Delete MOV Evidence</h4>
+                  <p className="text-xs text-[#8FBCA7]">Confirm removing this file</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#FFFDF9] bg-[#061810] p-2.5 rounded-lg border border-[#D4AF37]/20 truncate">
+                {mov.title}
+              </p>
+              <p className="text-xs text-rose-300">
+                This document will be permanently deleted from the SBM database.
+              </p>
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#D4AF37]/20">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={isDeleting}
+                  className="px-3 py-1.5 text-xs text-[#8FBCA7] hover:bg-[#0E3322] rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  id="confirm-modal-delete-btn"
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    try {
+                      await deleteMov(mov.id);
+                      setConfirmDelete(false);
+                      onClose();
+                    } finally {
+                      setIsDeleting(false);
+                    }
+                  }}
+                  disabled={isDeleting}
+                  className="px-3.5 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-50 rounded-lg shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isDeleting ? 'Deleting...' : 'Yes, Delete'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

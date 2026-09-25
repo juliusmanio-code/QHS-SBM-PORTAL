@@ -19,7 +19,8 @@ import {
   HelpCircle,
   Clock,
   Sparkles,
-  Tag
+  Tag,
+  Trash2
 } from 'lucide-react';
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -58,7 +59,8 @@ export const IndicatorDetailView: React.FC<IndicatorDetailViewProps> = ({
     addComment,
     submitMovForReview,
     approveMov,
-    unlockMov
+    unlockMov,
+    deleteMov
   } = useSbmData();
 
   const {
@@ -121,6 +123,28 @@ export const IndicatorDetailView: React.FC<IndicatorDetailViewProps> = ({
   // New Comment input
   const [commentText, setCommentText] = useState('');
   const [isInternalComment, setIsInternalComment] = useState(false);
+
+  const [movToDelete, setMovToDelete] = useState<MovRecord | null>(null);
+  const [isDeletingMov, setIsDeletingMov] = useState(false);
+  const [deleteNotification, setDeleteNotification] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!movToDelete) return;
+    setIsDeletingMov(true);
+    try {
+      const removedTitle = movToDelete.title;
+      await deleteMov(movToDelete.id);
+      setDeleteNotification(`Successfully deleted "${removedTitle}".`);
+      setMovToDelete(null);
+      setTimeout(() => {
+        setDeleteNotification(null);
+      }, 3500);
+    } catch (err: any) {
+      console.error('Delete error:', err);
+    } finally {
+      setIsDeletingMov(false);
+    }
+  };
 
   useEffect(() => {
     if (currentRecord) {
@@ -411,6 +435,15 @@ export const IndicatorDetailView: React.FC<IndicatorDetailViewProps> = ({
                             Review
                           </button>
                         )}
+
+                        <button
+                          id={`delete-mov-btn-${mov.id}`}
+                          onClick={() => setMovToDelete(mov)}
+                          className="p-1.5 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md font-medium transition-colors cursor-pointer"
+                          title="Delete Evidence"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -795,6 +828,70 @@ export const IndicatorDetailView: React.FC<IndicatorDetailViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Delete MOV Confirmation Modal */}
+      {movToDelete && (
+        <div
+          id="indicator-delete-mov-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs"
+        >
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-slate-800 animate-in fade-in duration-150">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Evidence MOV</h3>
+                <p className="text-xs text-slate-500">Remove attached evidence for Indicator {indicator.id}</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                <span className="font-bold text-slate-900 truncate">{movToDelete.title}</span>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate">
+                File: {movToDelete.originalFilename} • Uploader: {movToDelete.uploaderName}
+              </p>
+            </div>
+
+            <p className="text-xs text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+              Are you sure you want to remove this MOV? If this satisfies a mandatory item, the checklist requirement will revert to missing.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                id="cancel-indicator-delete-btn"
+                onClick={() => setMovToDelete(null)}
+                disabled={isDeletingMov}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                id="confirm-indicator-delete-btn"
+                onClick={handleConfirmDelete}
+                disabled={isDeletingMov}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeletingMov ? 'Deleting...' : 'Yes, Delete'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Notification Toast */}
+      {deleteNotification && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs animate-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span>{deleteNotification}</span>
+        </div>
+      )}
     </div>
   );
 };

@@ -148,10 +148,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src={schoolProfile.logoUrl || schoolProfile.schoolLogo}
                 alt="School Logo"
-                className="w-9 h-9 rounded-lg object-contain bg-white/10 p-0.5 border border-[#D4AF37]/40 flex-shrink-0 shadow-md"
+                className="w-9 h-9 rounded-full object-cover bg-white/10 p-0.5 border-2 border-[#D4AF37] flex-shrink-0 shadow-md"
               />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-[#0E3322] border border-[#D4AF37]/40 flex items-center justify-center text-[#F0D283] font-black text-xs shadow-md flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-[#0E3322] border-2 border-[#D4AF37] flex items-center justify-center text-[#F0D283] font-black text-xs shadow-md flex-shrink-0">
                 DEPED
               </div>
             )}
