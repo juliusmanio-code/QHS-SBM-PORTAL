@@ -774,36 +774,92 @@ export const ReportsCenterView: React.FC = () => {
 
           {/* Signatures block for official printout */}
           <div className="pt-8 border-t-2 border-slate-900 space-y-3">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center text-xs">
-              <div>
-                <div className="h-10"></div>
-                <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
-                  {schoolProfile?.sbmCoordinator || 'Mr. Jonathan C. Santos'}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 text-center text-xs">
+              {/* SBM Coordinator */}
+              {Boolean(schoolProfile?.sbmCoordinator) && (
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Prepared by:</div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {schoolProfile?.sbmCoordinator}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {schoolProfile?.sbmCoordinatorTitle || 'School SBM Coordinator / Master Teacher II'}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium">
-                  {schoolProfile?.sbmCoordinatorTitle || 'School SBM Coordinator / Master Teacher II'}
-                </div>
-              </div>
+              )}
 
-              <div>
-                <div className="h-10"></div>
-                <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
-                  {schoolProfile?.principalName || schoolProfile?.schoolHead || 'Dr. Lourdes R. Sese'}
+              {/* Assistant Principal */}
+              {Boolean(schoolProfile?.assistantPrincipal) && (
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Reviewed by:</div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {schoolProfile?.assistantPrincipal}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {schoolProfile?.assistantPrincipalTitle || 'Assistant Principal'}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium">
-                  {schoolProfile?.schoolHeadTitle || 'Secondary School Principal IV'}
-                </div>
-              </div>
+              )}
 
-              <div className="col-span-2 sm:col-span-1">
-                <div className="h-10"></div>
-                <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
-                  {schoolProfile?.divisionValidator || 'Dr. Maria Elena V. Gonzales'}
+              {/* Principal */}
+              {Boolean(schoolProfile?.principalName || schoolProfile?.schoolHead) && (
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Certified Correct:</div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {schoolProfile?.principalName || schoolProfile?.schoolHead}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {schoolProfile?.schoolHeadTitle || 'Secondary School Principal IV'}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium">
-                  {schoolProfile?.divisionValidatorTitle || 'Division SBM Validator / EPS - SDO QC'}
+              )}
+
+              {/* Division Validator */}
+              {Boolean(schoolProfile?.divisionValidator) && (
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Validated by:</div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {schoolProfile?.divisionValidator}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {schoolProfile?.divisionValidatorTitle || 'Division SBM Validator / EPS - SDO QC'}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Division Superintendent */}
+              {Boolean(schoolProfile?.divisionSuperintendent) && (
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Recommending Approval:</div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {schoolProfile?.divisionSuperintendent}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {schoolProfile?.divisionSuperintendentTitle || 'Schools Division Superintendent'}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Signatories */}
+              {(schoolProfile?.customSignatories || []).map((sig) => (
+                <div key={sig.id}>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">
+                    {sig.roleLabel || 'Endorsed by:'}
+                  </div>
+                  <div className="h-6"></div>
+                  <div className="font-bold text-slate-900 border-t border-slate-400 pt-1 uppercase tracking-wide">
+                    {sig.name}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {sig.title || sig.office}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-end print:hidden pt-2">

@@ -30,6 +30,7 @@ import {
 import { useSbmData } from '../../contexts/SbmDataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DimensionCoordinator, CustomSignatory } from '../../types';
+import { SignatoriesRosterManager } from './SignatoriesRosterManager';
 
 export const SchoolProfileView: React.FC = () => {
   const { schoolProfile, updateSchoolProfile } = useSbmData();
@@ -766,209 +767,16 @@ export const SchoolProfileView: React.FC = () => {
         </div>
       </div>
 
-      {/* DepEd Leadership, SBM Coordinators & Official Signatories Roster */}
-      <div className="bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/35 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#D4AF37]/25 pb-4">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <UserCheck className="w-5 h-5 text-[#F0D283]" />
-              <h3 className="text-base font-bold text-[#FFFDF9]">
-                Official School Leadership, SBM Coordinators & DepEd Signatories Roster
-              </h3>
-            </div>
-            <p className="text-xs text-[#8FBCA7]">
-              Designated school authorities and dimension committee leads who prepare, certify, and validate official SBM reports and scorecards.
-            </p>
-          </div>
-          {canEdit && (
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('signatories')}
-                className="gold-btn inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-md"
-              >
-                <Edit className="w-3.5 h-3.5" />
-                <span>Edit Signatories</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('coordinators')}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#061810]/70 hover:bg-[#0E3322] border border-[#D4AF37]/35 text-xs text-[#F0D283] font-semibold transition-colors"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Edit Dimension Leads</span>
-              </button>
-            </div>
-          )}
-        </div>
+      {/* DepEd Leadership, SBM Coordinators & Official Signatories Roster - Fully Editable with Add & Delete */}
+      <SignatoriesRosterManager
+        canEdit={canEdit}
+        onOpenEditProfile={handleOpenEditProfile}
+      />
 
-        {/* Executive Signatories Grid */}
-        <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#F0D283] flex items-center space-x-2">
-              <Shield className="w-4 h-4 text-[#D4AF37]" />
-              <span>School Executive & Division Signatories</span>
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#F0D283] border border-[#D4AF37]/30 text-[10px] font-semibold">
-                {[
-                  principalName,
-                  sbmCoordinator,
-                  assistantPrincipal,
-                  divisionValidator,
-                  divisionSuperintendent,
-                  ...(customSignatories || []).map((s) => s.name)
-                ].filter((n) => n && n.trim() !== '').length} Active Signatories
-              </span>
-            </h4>
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('signatories')}
-                className="text-[11px] text-[#F0D283] hover:text-[#FFFDF9] underline flex items-center space-x-1"
-              >
-                <span>Manage Signatories</span>
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 text-xs">
-            {/* Principal */}
-            <div className="p-4 bg-[#092217]/90 rounded-xl border-2 border-[#D4AF37]/40 shadow-sm space-y-1 relative">
-              <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block">
-                School Principal / Head
-              </span>
-              <p className="text-sm font-black text-[#FFFDF9] leading-tight">{principalName}</p>
-              <p className="text-[11px] text-[#A7D7C1] font-medium">{schoolHeadTitle}</p>
-              <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-[#D4AF37]/15 text-[#F0D283] border border-[#D4AF37]/30">
-                School ID: {schoolId}
-              </span>
-            </div>
-
-            {/* SBM Coordinator */}
-            <div className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/30 shadow-sm space-y-1 relative">
-              <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block">
-                School SBM Coordinator
-              </span>
-              <p className="text-sm font-black text-[#FFFDF9] leading-tight">{sbmCoordinator}</p>
-              <p className="text-[11px] text-[#A7D7C1] font-medium">{sbmCoordinatorTitle}</p>
-              <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-emerald-950/60 text-emerald-300 border border-emerald-500/30">
-                Focal Lead
-              </span>
-            </div>
-
-            {/* Assistant Principal - only displayed if not deleted */}
-            {assistantPrincipal && assistantPrincipal.trim() !== '' && (
-              <div className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/30 shadow-sm space-y-1 relative group">
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => handleDirectDeleteSignatory('assistantPrincipal')}
-                    title="Remove Assistant Principal from signatories"
-                    className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block pr-6">
-                  Assistant Principal
-                </span>
-                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{assistantPrincipal}</p>
-                <p className="text-[11px] text-[#A7D7C1] font-medium">{assistantPrincipalTitle}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-[#061810] text-[#8FBCA7] border border-[#D4AF37]/20">
-                  Academics / Ops
-                </span>
-              </div>
-            )}
-
-            {/* Division SBM Validator - only displayed if not deleted */}
-            {divisionValidator && divisionValidator.trim() !== '' && (
-              <div className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/30 shadow-sm space-y-1 relative group">
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => handleDirectDeleteSignatory('divisionValidator')}
-                    title="Remove Division Validator from signatories"
-                    className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block pr-6">
-                  SDO SBM Validator
-                </span>
-                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{divisionValidator}</p>
-                <p className="text-[11px] text-[#A7D7C1] font-medium">{divisionValidatorTitle}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-blue-950/50 text-blue-300 border border-blue-500/30">
-                  Division Level
-                </span>
-              </div>
-            )}
-
-            {/* Schools Division Superintendent - only displayed if not deleted */}
-            {divisionSuperintendent && divisionSuperintendent.trim() !== '' && (
-              <div className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/30 shadow-sm space-y-1 relative group">
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => handleDirectDeleteSignatory('divisionSuperintendent')}
-                    title="Remove Superintendent from signatories"
-                    className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block pr-6">
-                  Schools Division Superintendent
-                </span>
-                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{divisionSuperintendent}</p>
-                <p className="text-[11px] text-[#A7D7C1] font-medium">{divisionSuperintendentTitle}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-[#061810] text-[#F0D283] border border-[#D4AF37]/30">
-                  Approving Authority
-                </span>
-              </div>
-            )}
-
-            {/* Custom Signatories */}
-            {(customSignatories || []).map((sig) => (
-              <div key={sig.id} className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/30 shadow-sm space-y-1 relative group">
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => handleDirectDeleteCustomSignatory(sig.id, sig.name)}
-                    title={`Remove ${sig.name || 'Signatory'}`}
-                    className="absolute top-2.5 right-2.5 p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <span className="text-[10px] font-bold text-[#F0D283] uppercase tracking-wider block pr-6">
-                  {sig.roleLabel || 'Additional Signatory'}
-                </span>
-                <p className="text-sm font-black text-[#FFFDF9] leading-tight">{sig.name || '(No Name Provided)'}</p>
-                <p className="text-[11px] text-[#A7D7C1] font-medium">{sig.title || sig.office || '-'}</p>
-                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-[#061810] text-[#D1E7DD] border border-[#D4AF37]/20">
-                  Custom
-                </span>
-              </div>
-            ))}
-
-            {/* Add / Manage Signatories Shortcut card if fewer than 5 */}
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('signatories')}
-                className="p-4 rounded-xl border border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#0E3322]/40 text-[#A7D7C1] hover:text-[#FFFDF9] flex flex-col items-center justify-center text-center space-y-1.5 transition-colors min-h-[105px]"
-              >
-                <Plus className="w-5 h-5 text-[#F0D283]" />
-                <span className="text-xs font-semibold text-[#F0D283]">Add / Restore Signatories</span>
-                <span className="text-[10px] text-[#8FBCA7]">Add, edit, or remove signatories</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Dimension Coordinators Grid */}
-        <div className="space-y-3 pt-2 border-t border-[#D4AF37]/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* SBM Dimension Committee Coordinators Grid */}
+      <div className="bg-[#0D2E1F]/90 rounded-2xl p-6 border border-[#D4AF37]/35 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D4AF37]/20 pb-3">
+          <div className="space-y-0.5">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#F0D283] flex items-center space-x-2">
               <Award className="w-4 h-4 text-[#D4AF37]" />
               <span>SBM Dimension Committee Coordinators</span>
@@ -976,67 +784,71 @@ export const SchoolProfileView: React.FC = () => {
                 {dimensionCoordinators.length} Leads
               </span>
             </h4>
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('coordinators')}
-                className="text-[11px] text-[#F0D283] hover:text-[#FFFDF9] underline flex items-center space-x-1"
-              >
-                <span>Manage Dimension Leads</span>
-              </button>
-            )}
+            <p className="text-xs text-[#8FBCA7]">
+              Focal chairpersons and master teachers leading evidence generation across the official DepEd SBM dimensions.
+            </p>
           </div>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => handleOpenEditProfile('coordinators')}
+              className="gold-btn inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold shadow-xs"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Manage Dimension Leads</span>
+            </button>
+          )}
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
-            {dimensionCoordinators.map((coord, idx) => (
-              <div
-                key={coord.dimensionId || idx}
-                className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/25 shadow-sm space-y-2 hover:border-[#D4AF37]/50 transition-colors relative group"
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F0D283] font-black text-[10px]">
-                    Dimension {coord.dimensionId}
-                  </span>
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={() => handleDirectDeleteCoordinator(coord.dimensionId, coord.leadName)}
-                      title={`Remove ${coord.leadName} as coordinator`}
-                      className="p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <div>
-                  <h5 className="font-bold text-[#FFFDF9] text-xs leading-snug line-clamp-1" title={coord.dimensionName}>
-                    {coord.dimensionName}
-                  </h5>
-                  <p className="text-sm font-black text-[#F0D283] mt-1">{coord.leadName || '(Unassigned)'}</p>
-                  <p className="text-[11px] text-[#A7D7C1]">{coord.designation || '-'}</p>
-                  {coord.email && (
-                    <p className="text-[10px] text-[#8FBCA7] truncate mt-1 flex items-center space-x-1">
-                      <Mail className="w-3 h-3 text-[#D4AF37]" />
-                      <span>{coord.email}</span>
-                    </p>
-                  )}
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+          {dimensionCoordinators.map((coord, idx) => (
+            <div
+              key={coord.dimensionId || idx}
+              className="p-4 bg-[#092217]/90 rounded-xl border border-[#D4AF37]/25 shadow-sm space-y-2 hover:border-[#D4AF37]/50 transition-colors relative group"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F0D283] font-black text-[10px]">
+                  Dimension {coord.dimensionId}
+                </span>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => handleDirectDeleteCoordinator(coord.dimensionId, coord.leadName)}
+                    title={`Remove ${coord.leadName} as coordinator`}
+                    className="p-1 rounded-md text-[#8FBCA7] hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-            ))}
+              <div>
+                <h5 className="font-bold text-[#FFFDF9] text-xs leading-snug line-clamp-1" title={coord.dimensionName}>
+                  {coord.dimensionName}
+                </h5>
+                <p className="text-sm font-black text-[#F0D283] mt-1">{coord.leadName || '(Unassigned)'}</p>
+                <p className="text-[11px] text-[#A7D7C1]">{coord.designation || '-'}</p>
+                {coord.email && (
+                  <p className="text-[10px] text-[#8FBCA7] truncate mt-1 flex items-center space-x-1">
+                    <Mail className="w-3 h-3 text-[#D4AF37]" />
+                    <span>{coord.email}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
 
-            {/* Quick Add Coordinator if less than 6 */}
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => handleOpenEditProfile('coordinators')}
-                className="p-4 rounded-xl border border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#0E3322]/40 text-[#A7D7C1] hover:text-[#FFFDF9] flex flex-col items-center justify-center text-center space-y-1.5 transition-colors min-h-[105px]"
-              >
-                <Plus className="w-5 h-5 text-[#F0D283]" />
-                <span className="text-xs font-semibold text-[#F0D283]">Manage Dimension Leads</span>
-                <span className="text-[10px] text-[#8FBCA7]">Add, remove, or adjust coordinators</span>
-              </button>
-            )}
-          </div>
+          {/* Quick Add Coordinator if less than 6 */}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => handleOpenEditProfile('coordinators')}
+              className="p-4 rounded-xl border border-dashed border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-[#0E3322]/40 text-[#A7D7C1] hover:text-[#FFFDF9] flex flex-col items-center justify-center text-center space-y-1.5 transition-colors min-h-[105px]"
+            >
+              <Plus className="w-5 h-5 text-[#F0D283]" />
+              <span className="text-xs font-semibold text-[#F0D283]">Manage Dimension Leads</span>
+              <span className="text-[10px] text-[#8FBCA7]">Add, remove, or adjust coordinators</span>
+            </button>
+          )}
         </div>
       </div>
 
